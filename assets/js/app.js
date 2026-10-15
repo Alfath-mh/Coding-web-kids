@@ -573,94 +573,149 @@
     }
         // ============ SHOP FULL (shop.php) ============
         // ============ SHOP FULL (shop.php) — Pakai DB ============
+       // ============ SHOP FULL (shop.php) — Pakai localStorage ============
     function renderShopFull() {
         var grid = document.getElementById('shop-full-grid');
         if (!grid) return;
 
+        var userId = USER.id || 0;
+        var KEY_KOIN = 'bs_koin_' + userId;
+        var KEY_KOLEKSI = 'bs_koleksi_' + userId;
+
+        // Ambil koin dari localStorage (fallback ke DB value)
+        var koinSekarang = (function () {
+            var v = localStorage.getItem(KEY_KOIN);
+            return v !== null ? parseInt(v, 10) : koinTotal;
+        })();
+
+        // Ambil koleksi
+        var koleksi = (function () {
+            try {
+                var v = localStorage.getItem(KEY_KOLEKSI);
+                return v ? JSON.parse(v) : [];
+            } catch (e) { return []; }
+        })();
+
+        function simpanKoin() { localStorage.setItem(KEY_KOIN, String(koinSekarang)); }
+        function simpanKoleksi() { localStorage.setItem(KEY_KOLEKSI, JSON.stringify(koleksi)); }
+        function sudahDimiliki(id) {
+            for (var i = 0; i < koleksi.length; i++) if (koleksi[i].id === id) return true;
+            return false;
+        }
+
+        // Render tombol di setiap item
+        function renderTombol(card) {
+            var id = card.getAttribute('data-item-id');
+            var area = card.querySelector('.btn-area');
+            if (!area) return;
+
+            if (sudahDimiliki(id)) {
+                // Sudah dimiliki → status + tombol pakai (kalau bisa dipakai)
+                var slot = card.getAttribute('data-item-slot');
+                var bisaDipakai = (slot === 'topi' || slot === 'kacamata');
+                area.innerHTML =
+                    '<div class="w-full text-center bg-emerald-100 text-emerald-700 font-extrabold text-sm py-2.5 rounded-full">Dimiliki ✅</div>' +
+                    (bisaDipakai
+                        ? '<button type="button" class="btn-pakai w-full mt-2 bg-violet-500 hover:bg-violet-600 text-white font-extrabold text-sm py-2 rounded-full transition-transform hover:scale-105" data-item-id="' + id + '">Gunakan 👕</button>'
+                        : '');
+            } else {
+                // Belum dimiliki → tombol beli
+                area.innerHTML =
+                    '<button type="button" class="btn-beli w-full bg-violet-500 hover:bg-violet-600 text-white font-extrabold text-sm py-2.5 rounded-full shadow transition-transform hover:scale-105 active:scale-95">Beli 🛒</button>';
+            }
+        }
+
+        // Render semua item
+        grid.querySelectorAll('.item-toko').forEach(renderTombol);
+
+        // Update saldo di header
+        var saldoEl = document.getElementById('shop-saldo');
+        if (saldoEl) saldoEl.textContent = koinSekarang;
+
+        // Event: klik beli / pakai
         grid.addEventListener('click', function (e) {
-            var btnBeli  = e.target.closest('.btn-beli');
+            var btnBeli = e.target.closest('.btn-beli');
             var btnPakai = e.target.closest('.btn-pakai');
+            var card = e.target.closest('.item-toko');
+            if (!card) return;
 
             // ============ BELI ============
             if (btnBeli && !btnBeli.disabled) {
-                var card = btnBeli.closest('.item-toko');
                 var id = card.getAttribute('data-item-id');
-                var harga = parseInt(card.getAttribute('data-harga'), 10) || 0;
-                var nama = card.getAttribute('data-nama');
+                var nama = card.getAttribute('data-item-nama');
+                var harga = parseInt(card.getAttribute('data-item-harga'), 10) || 0;
 
-                if (koinTotal < harga) {
-                    window.showToast('Koin belum cukup! Butuh ' + (harga - koinTotal) + ' koin lagi 💪', 3000);
+                if (sudahDimiliki(id)) {
+                    window.showToast('Kamu sudah punya item ini! ✅', 2000);
                     return;
                 }
 
-                btnBeli.disabled = true;
-                btnBeli.textContent = 'Memproses...';
+                if (koinSekarang < harga) {
+                    window.showToast('😢 Koin belum cukup! Butuh ' + (harga - koinSekarang) + ' koin lagi.', 3000);
+                    return;
+                }
 
+                // Proses beli
+                koinSekarang -= harga;
+                simpanKoin();
+
+                koleksi.push({
+                    id: id,
+                    nama: nama,
+                    emoji: card.getAttribute('data-item-emoji'),
+                    slot: card.getAttribute('data-item-slot')
+                });
+                simpanKoleksi();
+
+                // Update saldo
+                if (saldoEl) saldoEl.textContent = koinSekarang;
+
+                // Update tombol
+                renderTombol(card);
+
+                // Sinkronkan koinTotal global
+                window.setStarCoins ? window.setStarCoins(koinSekarang) : null;
+
+                // Sinkron ke DB (opsional)
                 fetch('api/beli_item.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ item_id: id })
-                })
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
-                    if (!data.ok) {
-                        window.showToast('❌ ' + (data.error || 'Gagal beli'), 3000);
-                        btnBeli.disabled = false;
-                        btnBeli.textContent = 'Beli 🛒';
-                        return;
-                    }
+                }).catch(function () {});
 
-                    // Update koin lokal (dari server)
-                    ubahKoin(-harga);
-                    var saldoEl = document.getElementById('shop-saldo');
-                    if (saldoEl) saldoEl.textContent = koinTotal;
-
-                    // Ganti tombol
-                    btnBeli.outerHTML = '<div class="mt-3 w-full text-center bg-emerald-100 text-emerald-700 font-extrabold text-sm py-2.5 rounded-full">✓ Dimiliki</div>' +
-                        '<button type="button" class="btn-pakai w-full mt-2 bg-violet-500 hover:bg-violet-600 text-white font-extrabold text-sm py-2 rounded-full" data-item-id="' + id + '">Gunakan 👕</button>';
-
-                    window.showToast('🎉 ' + nama + ' jadi milikmu!', 2500);
-                })
-                .catch(function (err) {
-                    window.showToast('❌ Gagal koneksi ke server', 3000);
-                    btnBeli.disabled = false;
-                    btnBeli.textContent = 'Beli 🛒';
-                });
+                window.showToast('🎉 ' + nama + ' jadi milikmu!', 2500);
+                return;
             }
 
             // ============ PAKAI ============
             if (btnPakai && !btnPakai.disabled) {
                 var idP = btnPakai.getAttribute('data-item-id');
-                btnPakai.disabled = true;
-                btnPakai.textContent = 'Memakai...';
+                var slotP = card.getAttribute('data-item-slot');
 
+                // Simpan slot yang aktif ke localStorage
+                var keyTopi = 'bs_topi_' + userId;
+                var keyKacamata = 'bs_kacamata_' + userId;
+
+                if (slotP === 'topi') {
+                    localStorage.setItem(keyTopi, idP);
+                } else if (slotP === 'kacamata') {
+                    localStorage.setItem(keyKacamata, idP);
+                }
+
+                window.showToast('👕 Berhasil dipakai! Cek di halaman Profil.', 2500);
+
+                // Update UI: tombol pakai jadi "Dipakai ✓"
+                btnPakai.outerHTML = '<div class="w-full mt-2 text-center bg-emerald-100 text-emerald-700 font-extrabold text-sm py-2 rounded-full">Dipakai ✓</div>';
+
+                // Sinkron DB
                 fetch('api/pakai_item.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ item_id: idP })
-                })
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
-                    btnPakai.textContent = 'Gunakan 👕';
-                    btnPakai.disabled = false;
-
-                    if (!data.ok) {
-                        window.showToast('❌ ' + (data.error || 'Gagal pakai'), 3000);
-                        return;
-                    }
-
-                    if (typeof pakaiOutfitItem === 'function') pakaiOutfitItem(idP);
-                    window.showToast('👕 Berhasil dipakai!', 2500);
-                })
-                .catch(function () {
-                    btnPakai.textContent = 'Gunakan 👕';
-                    btnPakai.disabled = false;
-                    window.showToast('❌ Gagal koneksi', 3000);
-                });
+                }).catch(function () {});
             }
         });
     }
-
     // ============ CHAT CS ARAZKA (arazka.php) ============
     function initChatCS() {
         var form   = document.getElementById('chat-form');
@@ -754,7 +809,150 @@
                     body: JSON.stringify({ item_id: id })
                 }).catch(function () {});
             });
-        });
+        });    // ============ PROFILE: KARAKTER DINAMIS + INVENTORY ============
+    function initProfile() {
+        var karakterEl = document.getElementById('karakter-utama');
+        if (!karakterEl) return;  // bukan halaman profile
+
+        var userId = USER.id || 0;
+        var KEY_KOLEKSI = 'bs_koleksi_' + userId;
+        var KEY_TOPI = 'bs_topi_' + userId;
+        var KEY_KACAMATA = 'bs_kacamata_' + userId;
+
+        // Ambil koleksi dari localStorage
+        var koleksi = (function () {
+            try {
+                var v = localStorage.getItem(KEY_KOLEKSI);
+                return v ? JSON.parse(v) : [];
+            } catch (e) { return []; }
+        })();
+
+        // Item yang aktif
+        var topiAktif = localStorage.getItem(KEY_TOPI) || null;
+        var kacamataAktif = localStorage.getItem(KEY_KACAMATA) || null;
+
+        // ============ RENDER KARAKTER ============
+        function renderKarakter() {
+            var topiEl = document.getElementById('avatar-topi');
+            var kacamataEl = document.getElementById('avatar-kacamata');
+
+            // Reset
+            topiEl.style.display = 'none';
+            topiEl.textContent = '';
+            kacamataEl.style.display = 'none';
+            kacamataEl.textContent = '';
+
+            // Cari emoji dari koleksi
+            if (topiAktif) {
+                var itemTopi = koleksi.find(function (it) { return it.id === topiAktif; });
+                if (itemTopi) {
+                    topiEl.textContent = itemTopi.emoji || '🎩';
+                    topiEl.style.display = '';
+                    topiEl.classList.remove('bounce-in');
+                    void topiEl.offsetWidth;
+                    topiEl.classList.add('bounce-in');
+                }
+            }
+
+            if (kacamataAktif) {
+                var itemKaca = koleksi.find(function (it) { return it.id === kacamataAktif; });
+                if (itemKaca) {
+                    kacamataEl.textContent = itemKaca.emoji || '🕶️';
+                    kacamataEl.style.display = '';
+                    kacamataEl.classList.remove('bounce-in');
+                    void kacamataEl.offsetWidth;
+                    kacamataEl.classList.add('bounce-in');
+                }
+            }
+
+            // Update stat item count
+            var statItem = document.getElementById('stat-item');
+            if (statItem) statItem.textContent = koleksi.length;
+        }
+
+        // ============ RENDER KOLEKSI ============
+        function renderKoleksi() {
+            var emptyEl = document.getElementById('koleksi-empty');
+            var gridEl = document.getElementById('koleksi-grid');
+            if (!gridEl) return;
+
+            if (koleksi.length === 0) {
+                emptyEl.classList.remove('hidden');
+                gridEl.classList.add('hidden');
+                gridEl.innerHTML = '';
+                return;
+            }
+
+            emptyEl.classList.add('hidden');
+            gridEl.classList.remove('hidden');
+            gridEl.innerHTML = '';
+
+            koleksi.forEach(function (item) {
+                var card = document.createElement('article');
+                card.className = 'flex flex-col bg-white border-2 rounded-2xl p-3 shadow-sm transition-all';
+                card.setAttribute('data-item-id', item.id);
+                card.setAttribute('data-item-slot', item.slot || '');
+
+                var sedangDipakai = (topiAktif === item.id) || (kacamataAktif === item.id);
+                var bisaDipakai = (item.slot === 'topi' || item.slot === 'kacamata');
+
+                if (sedangDipakai) {
+                    card.classList.add('border-emerald-400', 'bg-emerald-50');
+                } else {
+                    card.classList.add('border-violet-200');
+                }
+
+                var html =
+                    '<div class="text-4xl text-center mb-2 select-none">' + (item.emoji || '🎁') + '</div>' +
+                    '<h3 class="text-xs font-black leading-tight text-center flex-1">' + item.nama + '</h3>';
+
+                if (sedangDipakai) {
+                    html += '<span class="mt-2 w-full text-center text-xs font-extrabold bg-emerald-400 text-white py-1.5 rounded-full">✓ Dipakai</span>';
+                } else if (bisaDipakai) {
+                    html += '<button type="button" class="btn-pakai-profile w-full mt-2 bg-violet-500 hover:bg-violet-600 text-white font-extrabold text-xs py-1.5 rounded-full transition-transform hover:scale-105" data-item-id="' + item.id + '">Gunakan 👕</button>';
+                } else {
+                    html += '<span class="mt-2 w-full text-center text-xs font-bold bg-slate-100 text-slate-500 py-1.5 rounded-full">Koleksi</span>';
+                }
+
+                card.innerHTML = html;
+                gridEl.appendChild(card);
+            });
+
+            // Attach event ke tombol pakai
+            gridEl.querySelectorAll('.btn-pakai-profile').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var id = btn.getAttribute('data-item-id');
+                    var card = btn.closest('article');
+                    var slot = card.getAttribute('data-item-slot');
+
+                    // Simpan ke localStorage
+                    if (slot === 'topi') localStorage.setItem(KEY_TOPI, id);
+                    else if (slot === 'kacamata') localStorage.setItem(KEY_KACAMATA, id);
+
+                    // Update variable aktif
+                    topiAktif = localStorage.getItem(KEY_TOPI);
+                    kacamataAktif = localStorage.getItem(KEY_KACAMATA);
+
+                    // Re-render
+                    renderKarakter();
+                    renderKoleksi();
+
+                    window.showToast('👕 Berhasil dipakai!', 2000);
+
+                    // Sinkron ke DB (opsional)
+                    fetch('api/pakai_item.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ item_id: id })
+                    }).catch(function () {});
+                });
+            });
+        }
+
+        // ============ INIT ============
+        renderKarakter();
+        renderKoleksi();
+    }
     }
 
     // ============ INIT ============

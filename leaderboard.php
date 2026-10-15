@@ -12,37 +12,37 @@ $user_name  = $user['nama']        ?? 'Kapten';
 $user_id    = (int) ($user['id']         ?? 0);
 $star_coins = (int) ($user['star_coins'] ?? 0);
 
-// Ambil top users dari DB
-$topUsers = [];
-try {
-    $topUsers = db_all('SELECT id, nama, star_coins FROM users ORDER BY star_coins DESC LIMIT 10');
-} catch (Exception $e) { $topUsers = []; }
+// ============================================================
+// DUMMY DATA LEADERBOARD — SKALA SATU SEKOLAH
+// Nanti bisa diganti query DB: SELECT id, nama, kelas, star_coins FROM users ORDER BY star_coins DESC
+// ============================================================
+$leaderboard = [
+    ['id' => 101, 'nama' => 'Budi Santoso',       'kelas' => '5B', 'bintang' => 520, 'avatar' => '🧑‍🚀'],
+    ['id' => $user_id, 'nama' => $user_name,      'kelas' => '4A', 'bintang' => max(320, $star_coins), 'avatar' => '🚀', 'is_me' => true],
+    ['id' => 103, 'nama' => 'Siti Nurhaliza',     'kelas' => '5A', 'bintang' => 480, 'avatar' => '👩‍🚀'],
+    ['id' => 104, 'nama' => 'Dedi Kurniawan',     'kelas' => '4B', 'bintang' => 445, 'avatar' => '🧑‍🔬'],
+    ['id' => 105, 'nama' => 'Rina Amelia',        'kelas' => '3A', 'bintang' => 410, 'avatar' => '👧'],
+    ['id' => 106, 'nama' => 'Andi Pratama',       'kelas' => '5C', 'bintang' => 385, 'avatar' => '👦'],
+    ['id' => 107, 'nama' => 'Lina Marlina',       'kelas' => '4C', 'bintang' => 350, 'avatar' => '👩'],
+    ['id' => 108, 'nama' => 'Fajar Ramadhan',     'kelas' => '6A', 'bintang' => 320, 'avatar' => '🧑'],
+    ['id' => 109, 'nama' => 'Maya Sari',          'kelas' => '3B', 'bintang' => 295, 'avatar' => '👧'],
+    ['id' => 110, 'nama' => 'Rizki Hidayat',      'kelas' => '6B', 'bintang' => 275, 'avatar' => '👦'],
+    ['id' => 111, 'nama' => 'Nadia Putri',        'kelas' => '2A', 'bintang' => 240, 'avatar' => '👧'],
+    ['id' => 112, 'nama' => 'Bagas Wijaya',       'kelas' => '1D', 'bintang' => 210, 'avatar' => '🧒'],
+    ['id' => 113, 'nama' => 'Citra Dewi',         'kelas' => '2B', 'bintang' => 185, 'avatar' => '👧'],
+    ['id' => 114, 'nama' => 'Eko Prasetyo',       'kelas' => '1A', 'bintang' => 150, 'avatar' => '🧒'],
+    ['id' => 115, 'nama' => 'Fitri Handayani',    'kelas' => '2C', 'bintang' => 120, 'avatar' => '👧'],
+];
 
-// Fallback dummy kalau DB kosong
-if (count($topUsers) < 3) {
-    $topUsers = [
-        ['id' => 1,   'nama' => 'Budi Astronot', 'star_coins' => 520, 'sekolah' => 'SDN 1 Jakarta'],
-        ['id' => $user_id, 'nama' => $user_name, 'star_coins' => max(320, $star_coins), 'sekolah' => 'SDN 2 Bandung'],
-        ['id' => 3,   'nama' => 'Siti Star',     'star_coins' => 290, 'sekolah' => 'SDN 3 Surabaya'],
-        ['id' => 4,   'nama' => 'Dedi Rocket',   'star_coins' => 245, 'sekolah' => 'SDN 4 Medan'],
-        ['id' => 5,   'nama' => 'Rina Comet',    'star_coins' => 210, 'sekolah' => 'SDN 5 Semarang'],
-        ['id' => 6,   'nama' => 'Andi Nebula',   'star_coins' => 185, 'sekolah' => 'SDN 6 Makassar'],
-        ['id' => 7,   'nama' => 'Lina Galaxy',   'star_coins' => 165, 'sekolah' => 'SDN 7 Palembang'],
-        ['id' => 8,   'nama' => 'Fajar Meteor',  'star_coins' => 140, 'sekolah' => 'SDN 8 Denpasar'],
-        ['id' => 9,   'nama' => 'Maya Asteroid', 'star_coins' => 125, 'sekolah' => 'SDN 9 Balikpapan'],
-        ['id' => 10,  'nama' => 'Rizki Cosmos',  'star_coins' => 110, 'sekolah' => 'SDN 10 Pontianak'],
-    ];
-}
+// Sort by bintang DESC
+usort($leaderboard, function ($a, $b) {
+    return $b['bintang'] - $a['bintang'];
+});
 
-// Pastikan user sendiri ada di list (minimal rank 2)
-$adaUser = false;
-foreach ($topUsers as $u) if ((int)$u['id'] === $user_id) { $adaUser = true; break; }
-if (!$adaUser) {
-    $topUsers[1] = ['id' => $user_id, 'nama' => $user_name, 'star_coins' => $star_coins, 'sekolah' => 'Sekolahmu'];
-}
+$top3  = array_slice($leaderboard, 0, 3);
+$rest  = array_slice($leaderboard, 3);
 
 function e($t) { return htmlspecialchars((string) $t, ENT_QUOTES, 'UTF-8'); }
-function inisial($nama) { return strtoupper(substr(trim($nama), 0, 1)); }
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -61,8 +61,10 @@ function inisial($nama) { return strtoupper(substr(trim($nama), 0, 1)); }
     <style>
         @keyframes crown-bounce { 0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-6px) rotate(3deg);} }
         @keyframes frame-glow { 0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0.5);}50%{box-shadow:0 0 0 12px rgba(251,191,36,0);} }
+        @keyframes float-up { 0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);} }
         .crown-anim { animation: crown-bounce 2s ease-in-out infinite; }
         .podium-1 { animation: frame-glow 2s ease-in-out infinite; }
+        .float-up { animation: float-up 3s ease-in-out infinite; }
     </style>
 </head>
 <body class="font-nunito text-slate-800 min-h-screen antialiased" style="background-color:#F0F7FF;">
@@ -72,13 +74,16 @@ function inisial($nama) { return strtoupper(substr(trim($nama), 0, 1)); }
     <div class="lg:ml-72 min-h-screen flex flex-col">
         <?php include __DIR__ . '/components/header.php'; ?>
 
-        <main class="max-w-6xl mx-auto px-4 py-6 w-full flex-1">
+        <main class="max-w-5xl mx-auto px-4 py-6 w-full flex-1">
 
-            <!-- Header -->
+            <!-- HEADER -->
             <section class="mb-6 text-center">
-                <h1 class="text-3xl sm:text-4xl font-black">🏆 Top Kapten Minggu Ini</h1>
+                <span class="inline-block bg-violet-100 border-2 border-violet-200 text-violet-700 text-xs font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-full">
+                    🏫 SDN BRIGHT SPACE
+                </span>
+                <h1 class="mt-3 text-3xl sm:text-4xl font-black">Papan Skor Sekolah 🏆</h1>
                 <p class="mt-2 text-base sm:text-lg font-bold opacity-80">
-                    Lihat siapa saja penjelajah terbaik di galaksi!
+                    Top Kapten dengan Bintang Terbanyak Minggu Ini!
                 </p>
             </section>
 
@@ -87,17 +92,19 @@ function inisial($nama) { return strtoupper(substr(trim($nama), 0, 1)); }
                 <div class="grid grid-cols-3 gap-2 sm:gap-4 items-end max-w-3xl mx-auto">
 
                     <!-- JUARA 2 (kiri) -->
-                    <?php if (isset($topUsers[1])): $u = $topUsers[1]; ?>
+                    <?php if (isset($top3[1])): $u = $top3[1]; ?>
                         <div class="flex flex-col items-center">
                             <div class="relative">
-                                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-slate-200 to-slate-400 border-4 border-slate-300 flex items-center justify-center text-2xl sm:text-3xl font-black text-white shadow-lg">
-                                    <?= inisial($u['nama']) ?>
+                                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-slate-200 to-slate-400 border-4 border-slate-300 flex items-center justify-center text-3xl sm:text-4xl shadow-lg">
+                                    <?= $u['avatar'] ?>
                                 </div>
                                 <span class="absolute -top-3 -right-2 text-2xl sm:text-3xl">🥈</span>
                             </div>
                             <p class="mt-2 text-xs sm:text-sm font-black truncate w-full text-center"><?= e($u['nama']) ?></p>
-                            <p class="text-[10px] sm:text-xs font-bold text-slate-500 truncate w-full text-center"><?= e($u['sekolah'] ?? '-') ?></p>
-                            <p class="mt-1 text-xs sm:text-sm font-black text-amber-600"><?= (int) $u['star_coins'] ?> ⭐</p>
+                            <span class="mt-0.5 inline-block bg-violet-100 text-violet-700 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                                Kelas <?= e($u['kelas']) ?>
+                            </span>
+                            <p class="mt-1 text-xs sm:text-sm font-black text-amber-600"><?= (int) $u['bintang'] ?> ⭐</p>
                             <div class="mt-2 w-full bg-slate-300 rounded-t-2xl h-20 sm:h-24 flex items-start justify-center pt-2">
                                 <span class="text-2xl font-black text-slate-700">2</span>
                             </div>
@@ -105,18 +112,20 @@ function inisial($nama) { return strtoupper(substr(trim($nama), 0, 1)); }
                     <?php endif; ?>
 
                     <!-- JUARA 1 (tengah) -->
-                    <?php if (isset($topUsers[0])): $u = $topUsers[0]; ?>
+                    <?php if (isset($top3[0])): $u = $top3[0]; ?>
                         <div class="flex flex-col items-center">
-                            <div class="relative">
+                            <div class="relative float-up">
                                 <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-4xl sm:text-5xl crown-anim z-10">👑</span>
-                                <div class="podium-1 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-amber-200 to-amber-400 border-4 border-amber-400 flex items-center justify-center text-3xl sm:text-4xl font-black text-white shadow-2xl">
-                                    <?= inisial($u['nama']) ?>
+                                <div class="podium-1 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-amber-200 to-amber-400 border-4 border-amber-400 flex items-center justify-center text-4xl sm:text-5xl shadow-2xl">
+                                    <?= $u['avatar'] ?>
                                 </div>
                                 <span class="absolute -bottom-1 -right-2 text-2xl sm:text-3xl">🥇</span>
                             </div>
                             <p class="mt-2 text-xs sm:text-sm font-black truncate w-full text-center"><?= e($u['nama']) ?></p>
-                            <p class="text-[10px] sm:text-xs font-bold text-slate-500 truncate w-full text-center"><?= e($u['sekolah'] ?? '-') ?></p>
-                            <p class="mt-1 text-sm sm:text-base font-black text-amber-600"><?= (int) $u['star_coins'] ?> ⭐</p>
+                            <span class="mt-0.5 inline-block bg-amber-100 text-amber-700 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                                Kelas <?= e($u['kelas']) ?>
+                            </span>
+                            <p class="mt-1 text-sm sm:text-base font-black text-amber-600"><?= (int) $u['bintang'] ?> ⭐</p>
                             <div class="mt-2 w-full bg-amber-400 rounded-t-2xl h-28 sm:h-32 flex items-start justify-center pt-2">
                                 <span class="text-3xl font-black text-white">1</span>
                             </div>
@@ -124,17 +133,19 @@ function inisial($nama) { return strtoupper(substr(trim($nama), 0, 1)); }
                     <?php endif; ?>
 
                     <!-- JUARA 3 (kanan) -->
-                    <?php if (isset($topUsers[2])): $u = $topUsers[2]; ?>
+                    <?php if (isset($top3[2])): $u = $top3[2]; ?>
                         <div class="flex flex-col items-center">
                             <div class="relative">
-                                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-orange-200 to-amber-600 border-4 border-amber-500 flex items-center justify-center text-2xl sm:text-3xl font-black text-white shadow-lg">
-                                    <?= inisial($u['nama']) ?>
+                                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-orange-200 to-amber-600 border-4 border-amber-500 flex items-center justify-center text-3xl sm:text-4xl shadow-lg">
+                                    <?= $u['avatar'] ?>
                                 </div>
                                 <span class="absolute -top-3 -right-2 text-2xl sm:text-3xl">🥉</span>
                             </div>
                             <p class="mt-2 text-xs sm:text-sm font-black truncate w-full text-center"><?= e($u['nama']) ?></p>
-                            <p class="text-[10px] sm:text-xs font-bold text-slate-500 truncate w-full text-center"><?= e($u['sekolah'] ?? '-') ?></p>
-                            <p class="mt-1 text-xs sm:text-sm font-black text-amber-600"><?= (int) $u['star_coins'] ?> ⭐</p>
+                            <span class="mt-0.5 inline-block bg-orange-100 text-orange-700 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                                Kelas <?= e($u['kelas']) ?>
+                            </span>
+                            <p class="mt-1 text-xs sm:text-sm font-black text-amber-600"><?= (int) $u['bintang'] ?> ⭐</p>
                             <div class="mt-2 w-full bg-amber-600 rounded-t-2xl h-16 sm:h-20 flex items-start justify-center pt-2">
                                 <span class="text-2xl font-black text-white">3</span>
                             </div>
@@ -144,43 +155,47 @@ function inisial($nama) { return strtoupper(substr(trim($nama), 0, 1)); }
                 </div>
             </section>
 
-            <!-- TABEL PERINGKAT 4-10 -->
+            <!-- LIST PERINGKAT 4+ -->
             <section>
                 <h2 class="text-lg sm:text-xl font-black mb-3">📋 Peringkat Lainnya</h2>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                     <ul class="divide-y divide-slate-100">
-                        <?php for ($i = 3; $i < count($topUsers); $i++): $u = $topUsers[$i]; $rank = $i + 1; $isMe = ((int)$u['id'] === $user_id); ?>
-                            <li class="flex items-center justify-between gap-3 px-4 py-3 <?= $isMe ? 'bg-amber-50' : 'hover:bg-slate-50' ?>">
+                        <?php foreach ($rest as $i => $u): $rank = $i + 4; $isMe = !empty($u['is_me']); ?>
+                            <li class="flex items-center justify-between gap-3 px-4 py-3 <?= $isMe ? 'bg-amber-50 border-l-4 border-amber-400' : 'hover:bg-slate-50' ?>">
                                 <div class="flex items-center gap-3 min-w-0">
                                     <span class="w-8 text-center text-sm font-black text-slate-500">#<?= $rank ?></span>
-                                    <div class="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-violet-300 to-indigo-400 flex items-center justify-center text-white font-black text-sm shadow">
-                                        <?= inisial($u['nama']) ?>
+                                    <div class="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-violet-300 to-indigo-400 flex items-center justify-center text-xl shadow">
+                                        <?= $u['avatar'] ?>
                                     </div>
                                     <div class="min-w-0">
                                         <p class="text-sm font-extrabold truncate">
                                             <?= e($u['nama']) ?>
                                             <?php if ($isMe): ?>
-                                                <span class="ml-1 text-xs bg-amber-300 text-amber-900 font-black px-2 py-0.5 rounded-full">Kamu</span>
+                                                <span class="ml-1 text-[10px] bg-amber-300 text-amber-900 font-black px-2 py-0.5 rounded-full">Kamu</span>
                                             <?php endif; ?>
                                         </p>
-                                        <p class="text-xs font-bold text-slate-500 truncate"><?= e($u['sekolah'] ?? '-') ?></p>
+                                        <p class="text-xs font-bold text-slate-500">Kelas <?= e($u['kelas']) ?></p>
                                     </div>
                                 </div>
                                 <div class="shrink-0 text-right">
-                                    <p class="text-base font-black text-amber-600"><?= (int) $u['star_coins'] ?> ⭐</p>
+                                    <p class="text-base font-black text-amber-600"><?= (int) $u['bintang'] ?> ⭐</p>
                                 </div>
                             </li>
-                        <?php endfor; ?>
+                        <?php endforeach; ?>
                     </ul>
                 </div>
+
+                <p class="mt-4 text-center text-xs font-bold text-slate-400">
+                    Data peringkat berdasarkan total Bintang (⭐) yang dikumpulkan minggu ini.
+                </p>
             </section>
 
         </main>
 
         <footer class="bg-white border-t-2 border-slate-100 mt-8">
             <div class="max-w-6xl mx-auto px-4 py-4 text-center text-xs font-bold text-slate-400">
-                BRIGHT SPACE EdTech
+                BRIGHT SPACE EdTech · SDN BRIGHT SPACE
             </div>
         </footer>
     </div>

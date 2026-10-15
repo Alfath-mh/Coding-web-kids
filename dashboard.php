@@ -1,35 +1,26 @@
 <?php
 define('BRIGHT_SPACE', true);
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
+if (session_status() === PHP_SESSION_NONE) session_start();
 require __DIR__ . '/config/database.php';
 require_login();
 
 $appName = 'BRIGHT SPACE';
-$user    = current_user();
+$user = current_user();
+if (!$user) { header('Location: logout.php'); exit; }
 
-if (!$user) {
-    header('Location: logout.php');
-    exit;
-}
-
-// Data user (dengan fallback aman)
 $user_name  = $user['nama']        ?? 'Kapten';
 $user_id    = (int) ($user['id']         ?? 0);
 $star_coins = (int) ($user['star_coins'] ?? 0);
 $user_level = (int) ($user['level']      ?? 1);
 
-// Data dummy
+// Data dummy (bisa diganti query DB nanti)
 $total_bintang  = $star_coins;
 $misi_selesai   = 8;
 $total_misi     = 20;
 $streak_hari    = 3;
 $daily_progress = 50;
 
-// Riwayat
+// Riwayat dari DB
 $riwayat = [];
 try {
     $riwayat = db_all(
@@ -53,9 +44,6 @@ $leaderboard = [
     ['nama' => 'Siti',     'bintang' => 290,            'rank' => 3, 'medal' => '🥉'],
 ];
 
-// Item toko — supaya shop-container di dashboard tidak kosong
-require __DIR__ . '/config/planets.php';
-
 function e($t) { return htmlspecialchars((string) $t, ENT_QUOTES, 'UTF-8'); }
 function namaPlanet($id) {
     $map = ['matematika' => 'Planet Matematika', 'sains' => 'Planet Sains', 'bahasa' => 'Planet Bahasa', 'seni-coding' => 'Planet Seni & Coding'];
@@ -72,33 +60,26 @@ function namaMode($id) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - <?= e($appName) ?></title>
-
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: { extend: {
-                colors: { cosmic: { bg: '#E0F2FE', card: '#EDE9FE', accent: '#FEF3C7', text: '#1E1B4B' } },
-                fontFamily: { nunito: ['Nunito', 'ui-rounded', 'system-ui', 'sans-serif'] }
-            } }
-        };
+        tailwind.config = { theme: { extend: {
+            colors: { cosmic: { bg: '#E0F2FE', card: '#EDE9FE', accent: '#FEF3C7', text: '#1E1B4B' } },
+            fontFamily: { nunito: ['Nunito', 'ui-rounded', 'system-ui', 'sans-serif'] }
+        } } };
     </script>
     <style>
-        @keyframes bounce-soft { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
-        @keyframes pulse-soft  { 0%,100%{transform:scale(1);}       50%{transform:scale(1.06);} }
+        @keyframes bounce-soft { 0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);} }
+        @keyframes pulse-soft { 0%,100%{transform:scale(1);}50%{transform:scale(1.06);} }
         .arazka-bounce { animation: bounce-soft 2.4s ease-in-out infinite; }
-        .arazka-pulse  { animation: pulse-soft  2s   ease-in-out infinite; }
+        .arazka-pulse  { animation: pulse-soft 2s ease-in-out infinite; }
     </style>
 </head>
+<body class="font-nunito text-slate-800 min-h-screen antialiased" style="background-color:#F0F7FF;">
 
-<body class="font-nunito text-slate-800 min-h-screen antialiased" style="background-color: #F0F7FF;">
-
-    <!-- SIDEBAR (fixed di kiri, otomatis show di lg+) -->
     <?php include __DIR__ . '/components/sidebar.php'; ?>
 
-    <!-- MAIN CONTENT (offset kiri lg:ml-72) -->
     <div class="lg:ml-72 min-h-screen flex flex-col">
-
         <?php include __DIR__ . '/components/header.php'; ?>
 
         <main class="max-w-6xl mx-auto px-4 py-6 w-full flex-1">
@@ -108,6 +89,7 @@ function namaMode($id) {
                 <div class="relative overflow-hidden bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl shadow-xl p-6 sm:p-8 text-white">
                     <div class="absolute top-4 right-4 text-5xl opacity-20 select-none">⭐</div>
                     <div class="absolute bottom-2 right-20 text-3xl opacity-15 select-none">✨</div>
+
                     <div class="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                         <div class="flex-1">
                             <span class="inline-block bg-white/20 text-xs font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-full">
@@ -136,10 +118,10 @@ function namaMode($id) {
                 </div>
             </section>
 
-            <!-- SECTION 2: STATISTIK -->
+            <!-- SECTION 2: STATISTIK 4 CARD -->
             <section class="mb-6">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-white rounded-2xl border-2 border-amber-300 p-4 shadow-sm">
+                    <div class="bg-white rounded-2xl border-2 border-amber-300 p-4 shadow-sm hover:shadow-md transition-shadow">
                         <div class="flex items-center gap-3">
                             <div class="w-12 h-12 shrink-0 flex items-center justify-center bg-amber-100 border-2 border-amber-300 rounded-2xl text-2xl">⭐</div>
                             <div class="min-w-0">
@@ -148,7 +130,7 @@ function namaMode($id) {
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white rounded-2xl border-2 border-yellow-300 p-4 shadow-sm">
+                    <div class="bg-white rounded-2xl border-2 border-yellow-300 p-4 shadow-sm hover:shadow-md transition-shadow">
                         <div class="flex items-center gap-3">
                             <div class="w-12 h-12 shrink-0 flex items-center justify-center bg-yellow-100 border-2 border-yellow-300 rounded-2xl text-2xl">🪙</div>
                             <div class="min-w-0">
@@ -157,7 +139,7 @@ function namaMode($id) {
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white rounded-2xl border-2 border-emerald-300 p-4 shadow-sm">
+                    <div class="bg-white rounded-2xl border-2 border-emerald-300 p-4 shadow-sm hover:shadow-md transition-shadow">
                         <div class="flex items-center gap-3">
                             <div class="w-12 h-12 shrink-0 flex items-center justify-center bg-emerald-100 border-2 border-emerald-300 rounded-2xl text-2xl">🏆</div>
                             <div class="min-w-0">
@@ -166,7 +148,7 @@ function namaMode($id) {
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white rounded-2xl border-2 border-rose-300 p-4 shadow-sm">
+                    <div class="bg-white rounded-2xl border-2 border-rose-300 p-4 shadow-sm hover:shadow-md transition-shadow">
                         <div class="flex items-center gap-3">
                             <div class="w-12 h-12 shrink-0 flex items-center justify-center bg-rose-100 border-2 border-rose-300 rounded-2xl text-2xl">🔥</div>
                             <div class="min-w-0">
@@ -214,6 +196,7 @@ function namaMode($id) {
 
             <!-- SECTION 4: 2 KOLOM -->
             <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Kiri: Riwayat -->
                 <div>
                     <h2 class="text-lg sm:text-xl font-black mb-3">📜 Riwayat Petualangan</h2>
                     <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
@@ -252,6 +235,7 @@ function namaMode($id) {
                     </div>
                 </div>
 
+                <!-- Kanan: Leaderboard -->
                 <div>
                     <h2 class="text-lg sm:text-xl font-black mb-3">🏆 Top Kapten Minggu Ini</h2>
                     <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
@@ -280,26 +264,6 @@ function namaMode($id) {
                 </div>
             </section>
 
-            <!-- ============================================== -->
-            <!-- SHOP CONTAINER (untuk item toko)                -->
-            <!-- ============================================== -->
-            <section id="shop-section" class="mt-8">
-                <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-lg sm:text-xl font-black">🛍️ Toko Bintang</h2>
-                    <a href="shop.php" class="text-sm font-extrabold text-violet-600 hover:underline">Lihat Semua →</a>
-                </div>
-
-                <div id="shop-container"
-                     class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                    <!-- Item toko di-render oleh JS (assets/js/app.js) -->
-                    <div id="shop-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                        <p class="col-span-full text-center text-sm font-bold text-slate-400 py-4">
-                            Memuat item toko...
-                        </p>
-                    </div>
-                </div>
-            </section>
-
         </main>
 
         <footer class="bg-white border-t-2 border-slate-100 mt-8">
@@ -309,23 +273,15 @@ function namaMode($id) {
         </footer>
     </div>
 
-    <?php include __DIR__ . '/components/modal-shop.php'; ?>
+    <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] hidden bg-cosmic-text text-white font-bold text-sm px-4 py-2 rounded-full shadow-lg text-center max-w-[90%]" style="display:none;"></div>
 
-    <div id="toast"
-         class="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] hidden bg-cosmic-text text-white font-bold text-sm px-4 py-2 rounded-full shadow-lg text-center max-w-[90%]"
-         style="display:none;"></div>
-
-    <!-- Data untuk JS (dipakai shop-container & modul lain) -->
     <script>
         window.BRIGHT_SPACE = {
             user: {
                 id: <?= (int) $user_id ?>,
                 nama: <?= json_encode($user_name, JSON_UNESCAPED_UNICODE) ?>,
-                star_coins: <?= (int) $star_coins ?>,
-                topi: <?= json_encode($user['avatar_topi'] ?? null, JSON_UNESCAPED_UNICODE) ?>,
-                kacamata: <?= json_encode($user['avatar_kacamata'] ?? null, JSON_UNESCAPED_UNICODE) ?>
-            },
-            items: <?= json_encode($items ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+                star_coins: <?= (int) $star_coins ?>
+            }
         };
     </script>
     <script src="assets/js/app.js" defer></script>

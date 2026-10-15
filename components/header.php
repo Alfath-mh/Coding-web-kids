@@ -7,11 +7,11 @@ $levelUser = $user ? (int) $user['level'] : 1;
 ?>
 <header class="sticky top-0 z-40 bg-cosmic-card border-b-4 border-cosmic-accent shadow-md">
     <nav class="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3 ml-14">
-            <a href="index.php" class="hidden sm:inline text-lg font-black">BRIGHT <span class="text-violet-600">SPACE</span></a>
-            <a href="index.php" class="hidden md:inline-flex items-center gap-1 text-sm font-extrabold px-3 py-1.5 rounded-full hover:bg-white/60">🗺️ Peta Planet</a>
-        </div>
 
+        <!-- KIRI: spacer untuk tombol hamburger sidebar -->
+        <div class="ml-14"></div>
+
+        <!-- KANAN: Koin + Profil -->
         <div class="flex items-center gap-2">
             <div id="star-coin-badge" class="flex items-center gap-1 bg-cosmic-accent border-2 border-amber-300 rounded-full pl-1.5 pr-2.5 py-1 shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5 shrink-0" aria-hidden="true">
@@ -19,14 +19,6 @@ $levelUser = $user ? (int) $user['level'] : 1;
                 </svg>
                 <span id="star-coin-count" class="font-extrabold text-base leading-none"><?= $koinUser ?></span>
             </div>
-
-            <button type="button" id="btn-toko-bintang" aria-haspopup="dialog"
-                    class="flex items-center gap-1 bg-violet-500 hover:bg-violet-600 text-white font-extrabold text-sm px-3 py-2 rounded-full shadow-md hover:scale-105 active:scale-95">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M3 9l1.5-5h15L21 9"/><path d="M5 12v8h14v-8"/><path d="M10 20v-4h4v4"/>
-                </svg>
-                <span class="hidden sm:inline">Toko</span>
-            </button>
 
             <div class="relative">
                 <button type="button" id="btn-profil" aria-haspopup="true" aria-expanded="false"
@@ -42,8 +34,7 @@ $levelUser = $user ? (int) $user['level'] : 1;
                         <p class="text-lg font-black truncate"><?= htmlspecialchars($namaUser) ?></p>
                         <p class="text-xs font-bold text-amber-600 mt-0.5">🏆 Level <?= $levelUser ?></p>
                     </div>
-                    <a href="index.php" class="block mt-2 px-3 py-2 rounded-xl hover:bg-violet-50 text-sm font-extrabold">🗺️ Peta Planet</a>
-                    <a href="logout.php" class="block mt-1 px-3 py-2 rounded-xl hover:bg-rose-50 text-sm font-extrabold text-rose-600">🚪 Keluar</a>
+                    <a href="logout.php" class="block mt-2 px-3 py-2 rounded-xl hover:bg-rose-50 text-sm font-extrabold text-rose-600">🚪 Keluar</a>
                 </div>
             </div>
         </div>
