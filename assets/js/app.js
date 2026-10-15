@@ -571,6 +571,156 @@
         if (USER.topi) pakaiOutfitItem(USER.topi);
         if (USER.kacamata) pakaiOutfitItem(USER.kacamata);
     }
+        // ============ SHOP FULL (shop.php) ============
+    function renderShopFull() {
+        var grid = document.getElementById('shop-full-grid');
+        if (!grid) return;
+
+        grid.addEventListener('click', function (e) {
+            var btnBeli = e.target.closest('.btn-beli');
+            var btnPakai = e.target.closest('.btn-pakai');
+
+            if (btnBeli && !btnBeli.disabled) {
+                var card = btnBeli.closest('.item-toko');
+                var id = card.getAttribute('data-item-id');
+                var harga = parseInt(card.getAttribute('data-harga'), 10) || 0;
+                var nama = card.getAttribute('data-nama');
+
+                if (koinTotal < harga) {
+                    window.showToast('Koin belum cukup! Butuh ' + (harga - koinTotal) + ' koin lagi 💪', 3000);
+                    return;
+                }
+
+                ubahKoin(-harga);
+                var saldoEl = document.getElementById('shop-saldo');
+                if (saldoEl) saldoEl.textContent = koinTotal;
+
+                // Ganti tombol jadi "Gunakan"
+                var statusDiv = document.createElement('div');
+                statusDiv.className = 'item-status mt-3 w-full text-center bg-emerald-100 text-emerald-700 font-extrabold text-sm py-2.5 rounded-full';
+                statusDiv.textContent = '✓ Dimiliki';
+
+                var btnGunakan = document.createElement('button');
+                btnGunakan.type = 'button';
+                btnGunakan.className = 'btn-pakai w-full mt-2 bg-violet-500 hover:bg-violet-600 text-white font-extrabold text-sm py-2 rounded-full';
+                btnGunakan.setAttribute('data-item-id', id);
+                btnGunakan.textContent = 'Gunakan 👕';
+
+                btnBeli.replaceWith(statusDiv);
+                statusDiv.insertAdjacentElement('afterend', btnGunakan);
+
+                fetch('api/beli_item.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ item_id: id })
+                }).catch(function () {});
+
+                window.showToast('🎉 ' + nama + ' jadi milikmu!', 2500);
+            }
+
+            if (btnPakai && !btnPakai.disabled) {
+                var idP = btnPakai.getAttribute('data-item-id');
+                if (typeof pakaiOutfitItem === 'function') pakaiOutfitItem(idP);
+                window.showToast('👕 Berhasil dipakai!', 2500);
+            }
+        });
+    }
+
+    // ============ CHAT CS ARAZKA (arazka.php) ============
+    function initChatCS() {
+        var form   = document.getElementById('chat-form');
+        var input  = document.getElementById('chat-input');
+        var box    = document.getElementById('chat-messages');
+        if (!form || !input || !box) return;
+
+        var faqPills = document.querySelectorAll('.faq-pill');
+
+        var knowledge = [
+            { keys: ['koin', 'bintang', 'dapat koin'], jawaban: 'Koin Bintang ⭐ bisa kamu dapat dengan menyelesaikan Misi Wajib di setiap planet, Kapten! Setiap jawaban benar memberi koin. Semakin tinggi akurasimu, semakin banyak koinmu! 🚀' },
+            { keys: ['buka planet', 'terkunci', 'unlock', 'kunci'], jawaban: 'Planet yang terkunci 🔒 akan terbuka kalau kamu sudah naik level, Kapten! Terus selesaikan misi di planet yang terbuka dulu, ya! 💪' },
+            { keys: ['pakai barang', 'item', 'toko', 'gunakan'], jawaban: 'Barang yang sudah kamu beli 🛍️ bisa dipakai lewat halaman Profil Kapten → Koleksi Saya → tombol "Gunakan 👕". Nanti langsung terpasang di avatar Arazka-mu! ✨' },
+            { keys: ['star coin', 'coin', 'koin bintang'], jawaban: 'Star Coins (Koin Bintang) 🪙 adalah mata uang di BRIGHT SPACE! Kamu pakai untuk beli item keren di Toko Bintang. Dapat dari jawab kuis dengan benar! ⭐' },
+            { keys: ['misi', 'wajib', 'side quest', 'quest'], jawaban: 'Ada 2 jenis misi, Kapten! ⭐ Misi Wajib kasih koin besar, 💎 Side Quest untuk seru-seruan. Pilih yang kamu suka! 🎯' },
+            { keys: ['capek', 'lelah', 'susah', 'gagal'], jawaban: 'Jangan sedih, Kapten! Setiap usaha itu hebat. Istirahat dulu, nanti coba lagi. Aku yakin kamu bisa! 🌈' },
+            { keys: ['rahasia', 'tips', 'trik'], jawaban: 'Tips rahasia dari Arazka: 🤫 jawab semua soal dengan benar = Bonus Sempurna +20%! Terus latihan dan fokus ya! 🚀' },
+            { keys: ['siapa', 'kamu siapa', 'arazka'], jawaban: 'Aku Arazka! 🤖 Mentor AI BRIGHT SPACE yang selalu siap bantu Kapten cilik seperti kamu! Tanya apa saja, aku siap! ✨' }
+        ];
+
+        function cariJawaban(teks) {
+            var t = teks.toLowerCase();
+            for (var i = 0; i < knowledge.length; i++) {
+                for (var j = 0; j < knowledge[i].keys.length; j++) {
+                    if (t.indexOf(knowledge[i].keys[j]) !== -1) return knowledge[i].jawaban;
+                }
+            }
+            return 'Hmm, aku belum paham soal itu, Kapten. 🤔 Coba tanya pakai kata lain, atau klik tombol pertanyaan cepat di atas ya! 😊';
+        }
+
+        function tambahPesan(siapa, teks) {
+            var wrap = document.createElement('div');
+            wrap.className = 'flex items-start gap-2 ' + (siapa === 'user' ? 'flex-row-reverse' : '');
+            var av = document.createElement('div');
+            av.className = 'w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-lg ' + (siapa === 'user' ? 'bg-violet-300 text-white border-2 border-violet-400' : 'bg-violet-100 border-2 border-violet-200');
+            av.textContent = siapa === 'user' ? (USER.nama ? USER.nama.charAt(0).toUpperCase() : 'K') : '🤖';
+            var bubble = document.createElement('div');
+            bubble.className = 'px-4 py-2.5 max-w-[80%] text-sm font-bold leading-snug ' + (siapa === 'user' ? 'bg-violet-500 text-white rounded-2xl rounded-tr-sm' : 'bg-indigo-50 border border-indigo-100 rounded-2xl rounded-tl-sm');
+            bubble.textContent = teks;
+            wrap.appendChild(av);
+            wrap.appendChild(bubble);
+            box.appendChild(wrap);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function kirimPesan(teks) {
+            if (!teks.trim()) return;
+            tambahPesan('user', teks);
+            input.value = '';
+            setTimeout(function () {
+                tambahPesan('arazka', cariJawaban(teks));
+            }, 500);
+        }
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            kirimPesan(input.value);
+        });
+
+        faqPills.forEach(function (pill) {
+            pill.addEventListener('click', function () {
+                kirimPesan(pill.getAttribute('data-q'));
+            });
+        });
+    }
+
+    // ============ PROFILE: PAKAI ITEM (profile.php) ============
+    function initProfile() {
+        var btns = document.querySelectorAll('.btn-pakai-profile');
+        if (!btns.length) return;
+
+        btns.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var id = btn.getAttribute('data-item-id');
+                if (typeof pakaiOutfitItem === 'function') pakaiOutfitItem(id);
+                window.showToast('👕 Berhasil dipakai!', 2500);
+
+                btn.textContent = '✓ Dipakai';
+                btn.classList.remove('bg-violet-500', 'hover:bg-violet-600', 'hover:scale-105');
+                btn.classList.add('bg-emerald-400');
+
+                var card = btn.closest('article');
+                if (card) {
+                    card.classList.remove('border-violet-200');
+                    card.classList.add('border-emerald-400', 'bg-emerald-50');
+                }
+
+                fetch('api/pakai_item.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ item_id: id })
+                }).catch(function () {});
+            });
+        });
+    }
 
     // ============ INIT ============
     function init() {
@@ -721,8 +871,11 @@
             }
         });
         terapkanOutfitAwal();
-        renderShopDashboard();  
+        renderShopDashboard();
+        renderShopFull();
         initArazkaChat();
+        initChatCS();
+        initProfile();
 
         setTimeout(function () {
             if (!modalAktif && !document.getElementById('arazka-chat')) {
