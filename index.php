@@ -1,13 +1,13 @@
 <?php
 // ============================================================
 // BRIGHT SPACE - EdTech Platform untuk Siswa SD
-// Sub-Tahap 2B: Grid 4 Kartu Planet Mata Pelajaran
+// Sub-Tahap 2C: Modal Kuis Interaktif & Sistem Koin Bintang
 // Stack: PHP Native + HTML5 + Tailwind (CDN) + Vanilla JS
 // ============================================================
 
 $appName   = 'BRIGHT SPACE';
 $pageTitle = 'BRIGHT SPACE - Petualangan Belajar di Luar Angkasa';
-$starCoins = 100; // Poin awal siswa (akan dikelola pada sub-tahap berikutnya)
+$starCoins = 120; // Poin awal siswa
 
 // Fungsi bantu: escape teks agar aman ditampilkan di HTML
 function e($teks)
@@ -108,6 +108,30 @@ $planets = [
             </svg>',
     ],
 ];
+
+// ------------------------------------------------------------
+// Bank Soal Kuis (kunci = id planet). Tambah soal baru di sini.
+// ------------------------------------------------------------
+$kuis = [
+    'matematika' => [
+        'pertanyaan' => 'Roket Kapten membawa 8 bintang. Di perjalanan, Kapten menemukan 5 bintang lagi. Berapa jumlah bintang sekarang?',
+        'pilihan'    => ['A' => '12 bintang', 'B' => '14 bintang', 'C' => '13 bintang'],
+        'jawaban'    => 'C',
+        'penjelasan' => '8 ditambah 5 sama dengan 13.',
+    ],
+    'sains' => [
+        'pertanyaan' => 'Planet manakah yang dijuluki "Planet Merah"?',
+        'pilihan'    => ['A' => 'Mars', 'B' => 'Venus', 'C' => 'Saturnus'],
+        'jawaban'    => 'A',
+        'penjelasan' => 'Mars tampak merah karena tanahnya banyak mengandung besi berkarat.',
+    ],
+    'bahasa' => [
+        'pertanyaan' => 'Kata yang berlawanan arti dengan "besar" adalah ...',
+        'pilihan'    => ['A' => 'tinggi', 'B' => 'kecil', 'C' => 'panjang'],
+        'jawaban'    => 'B',
+        'penjelasan' => 'Lawan kata (antonim) dari "besar" adalah "kecil".',
+    ],
+];
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -146,7 +170,7 @@ $planets = [
     </script>
 
     <style>
-        /* Animasi ringan (hanya transform) agar hemat CPU/GPU */
+        /* Animasi ringan (hanya transform/opacity) agar hemat CPU/GPU */
         @keyframes rocket-wiggle {
             0%, 100% { transform: rotate(0deg) translateY(0); }
             25%      { transform: rotate(-8deg) translateY(-2px); }
@@ -161,6 +185,10 @@ $planets = [
             0%, 100% { transform: translateY(0) rotate(0deg); }
             50%      { transform: translateY(-4px) rotate(4deg); }
         }
+        @keyframes modal-in {
+            from { opacity: 0; transform: translateY(14px) scale(0.96); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
         .logo-link:hover .rocket-icon,
         .logo-link:focus-visible .rocket-icon {
             animation: rocket-wiggle 0.6s ease-in-out infinite;
@@ -170,6 +198,7 @@ $planets = [
         .planet-card.is-open:focus-within .planet-icon {
             animation: planet-float 1.4s ease-in-out infinite;
         }
+        .modal-panel { animation: modal-in 0.25s ease-out; }
 
         /* Hormati pengaturan "kurangi gerakan" milik perangkat */
         @media (prefers-reduced-motion: reduce) {
@@ -214,7 +243,7 @@ $planets = [
             <div class="flex items-center gap-2 sm:gap-3">
 
                 <!-- Badge Star Coins -->
-                <div class="flex items-center gap-1.5 bg-cosmic-accent border-2 border-amber-300 rounded-full pl-2 pr-3 py-1 shadow-sm" role="status" aria-live="polite" aria-label="Jumlah Star Coins">
+                <div id="star-coin-badge" class="flex items-center gap-1.5 bg-cosmic-accent border-2 border-amber-300 rounded-full pl-2 pr-3 py-1 shadow-sm" role="status" aria-live="polite" aria-label="Jumlah Star Coins">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 shrink-0" aria-hidden="true">
                         <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
                                  fill="#FCD34D" stroke="#B45309" stroke-width="1.2" stroke-linejoin="round"/>
@@ -250,11 +279,15 @@ $planets = [
         </section>
 
         <!-- Grid Kartu Planet: 1 kolom (HP), 2 kolom (Tablet), 4 kolom (Desktop) -->
-        <section aria-label="Daftar planet belajar" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <section id="grid-planet" aria-label="Daftar planet belajar" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <?php foreach ($planets as $p): ?>
                 <?php $terbuka = ($p['status'] === 'Terbuka'); ?>
-                <article class="planet-card <?= $terbuka ? 'is-open hover:-translate-y-2 hover:shadow-xl' : 'opacity-90' ?> relative flex flex-col bg-gradient-to-br <?= e($p['gradien']) ?> border-2 <?= e($p['border']) ?> rounded-3xl p-5 shadow-md transition-all duration-300"
-                         aria-labelledby="planet-<?= e($p['id']) ?>">
+                <article class="planet-card <?= $terbuka ? 'is-open hover:-translate-y-2 hover:shadow-xl' : 'opacity-90' ?> relative flex flex-col cursor-pointer bg-gradient-to-br <?= e($p['gradien']) ?> border-2 <?= e($p['border']) ?> rounded-3xl p-5 shadow-md transition-all duration-300"
+                         aria-labelledby="planet-<?= e($p['id']) ?>"
+                         data-planet-id="<?= e($p['id']) ?>"
+                         data-planet-nama="<?= e($p['nama']) ?>"
+                         data-poin="<?= (int) $p['poin'] ?>"
+                         data-level="<?= (int) $p['level'] ?>">
 
                     <!-- Badge Poin (pojok atas kartu) -->
                     <div class="absolute top-3 right-3 flex items-center gap-1 bg-cosmic-accent border-2 border-amber-300 rounded-full pl-1.5 pr-2.5 py-0.5 shadow-sm">
@@ -281,7 +314,7 @@ $planets = [
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M5 13l4 4L19 7"/>
                                 </svg>
-                                <?= e($p['status']) ?>
+                                <span class="status-teks"><?= e($p['status']) ?></span>
                             </span>
                         <?php else: ?>
                             <span class="inline-flex items-center gap-1 bg-white/70 text-slate-600 text-xs font-extrabold px-3 py-1 rounded-full">
@@ -289,7 +322,7 @@ $planets = [
                                     <rect x="5" y="11" width="14" height="9" rx="2"/>
                                     <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
                                 </svg>
-                                <?= e($p['status']) ?>
+                                <span class="status-teks"><?= e($p['status']) ?></span>
                             </span>
                         <?php endif; ?>
                     </div>
@@ -298,13 +331,13 @@ $planets = [
                     <div class="mt-auto pt-5">
                         <?php if ($terbuka): ?>
                             <button type="button"
-                                    class="btn-jelajah w-full text-white font-extrabold text-sm sm:text-base py-2.5 rounded-full shadow transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 <?= e($p['tombol']) ?>"
-                                    data-planet="<?= e($p['nama']) ?>">
+                                    class="btn-jelajah w-full text-white font-extrabold text-sm sm:text-base py-2.5 rounded-full shadow transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 <?= e($p['tombol']) ?>">
                                 Jelajahi Planet 🚀
                             </button>
                         <?php else: ?>
-                            <button type="button" disabled aria-disabled="true"
-                                    class="w-full bg-gray-200 text-gray-500 font-extrabold text-sm sm:text-base py-2.5 rounded-full cursor-not-allowed">
+                            <!-- Tidak memakai atribut disabled agar klik tetap memunculkan pemberitahuan ramah -->
+                            <button type="button" aria-disabled="true"
+                                    class="btn-terkunci w-full bg-gray-200 text-gray-500 font-extrabold text-sm sm:text-base py-2.5 rounded-full cursor-not-allowed focus:outline-none focus-visible:ring-4 focus-visible:ring-gray-300">
                                 Buka Level <?= (int) $p['level'] ?> 🔒
                             </button>
                         <?php endif; ?>
@@ -314,8 +347,60 @@ $planets = [
         </section>
     </main>
 
+    <!-- ===================== MODAL KUIS ===================== -->
+    <div id="kuis-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-cosmic-text/60"
+         role="dialog" aria-modal="true" aria-labelledby="kuis-judul">
+        <div id="kuis-panel" class="modal-panel relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-cosmic-card border-4 border-cosmic-accent rounded-3xl shadow-2xl p-5 sm:p-6">
+
+            <!-- Tombol Tutup (X) -->
+            <button type="button" id="kuis-tutup" aria-label="Tutup kuis"
+                    class="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full bg-white/80 text-cosmic-text transition-transform duration-150 hover:scale-110 hover:bg-white focus:outline-none focus-visible:ring-4 focus-visible:ring-cosmic-accent">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6L6 18"/>
+                </svg>
+            </button>
+
+            <!-- Kepala Modal: ikon planet + judul -->
+            <div class="flex items-center gap-3 pr-10">
+                <div id="kuis-ikon" class="w-16 h-16 shrink-0"></div>
+                <div>
+                    <p class="text-xs font-extrabold uppercase tracking-wide text-violet-600">Misi Kuis</p>
+                    <h2 id="kuis-judul" class="text-xl sm:text-2xl font-black leading-tight"></h2>
+                </div>
+            </div>
+
+            <!-- Hadiah -->
+            <div class="mt-3 inline-flex items-center gap-1 bg-cosmic-accent border-2 border-amber-300 rounded-full pl-1.5 pr-3 py-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5 shrink-0" aria-hidden="true">
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
+                             fill="#FCD34D" stroke="#B45309" stroke-width="1.2" stroke-linejoin="round"/>
+                </svg>
+                <span class="text-sm font-extrabold">Hadiah: <span id="kuis-hadiah"></span></span>
+            </div>
+
+            <!-- Pertanyaan -->
+            <p id="kuis-pertanyaan" class="mt-4 text-lg sm:text-xl font-extrabold leading-snug"></p>
+
+            <!-- Pilihan Jawaban (A, B, C) dibuat oleh JavaScript -->
+            <div id="kuis-pilihan" class="mt-4 grid gap-3"></div>
+
+            <!-- Umpan Balik (benar / salah) -->
+            <div id="kuis-feedback" class="hidden mt-4 rounded-2xl p-4 text-center border-2" role="status" aria-live="polite">
+                <div id="kuis-fb-ikon" class="w-14 h-14 mx-auto mb-1"></div>
+                <p id="kuis-fb-judul" class="text-lg font-black"></p>
+                <p id="kuis-fb-teks" class="mt-1 text-sm sm:text-base font-bold"></p>
+            </div>
+
+            <!-- Tombol Lanjut (muncul setelah jawaban benar) -->
+            <button type="button" id="kuis-lanjut"
+                    class="hidden w-full mt-4 bg-violet-500 text-white font-extrabold text-base py-3 rounded-full shadow transition-all duration-200 hover:scale-105 hover:bg-violet-600 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300">
+                Tutup / Lanjut Misi 🚀
+            </button>
+        </div>
+    </div>
+
     <!-- ===================== TOAST NOTIFIKASI ===================== -->
-    <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 hidden bg-cosmic-text text-white font-bold text-sm px-4 py-2 rounded-full shadow-lg text-center max-w-[90%]" role="status" aria-live="polite"></div>
+    <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] hidden bg-cosmic-text text-white font-bold text-sm px-4 py-2 rounded-full shadow-lg text-center max-w-[90%]" role="status" aria-live="polite"></div>
 
     <!-- ===================== FOOTER ===================== -->
     <footer class="bg-cosmic-card border-t-4 border-cosmic-accent">
@@ -329,42 +414,289 @@ $planets = [
         (function () {
             'use strict';
 
-            var coinEl  = document.getElementById('star-coin-count');
-            var toastEl = document.getElementById('toast');
-            var toastTimer = null;
+            // ---------- Data kuis dari PHP ----------
+            var DATA_KUIS = <?= json_encode($kuis, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
-            // Memperbarui counter Star Coins (dipakai kuis pada sub-tahap berikutnya)
-            window.setStarCoins = function (value) {
-                var n = Math.max(0, parseInt(value, 10) || 0);
-                coinEl.textContent = n;
-                coinEl.classList.remove('coin-pop');
-                void coinEl.offsetWidth; // restart animasi
-                coinEl.classList.add('coin-pop');
+            // ---------- Ikon umpan balik (SVG inline) ----------
+            var IKON_BINTANG =
+                '<svg viewBox="0 0 24 24" class="w-full h-full coin-pop" aria-hidden="true">' +
+                '<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="#FCD34D" stroke="#B45309" stroke-width="1.2" stroke-linejoin="round"/></svg>';
+            var IKON_SEMANGAT =
+                '<svg viewBox="0 0 24 24" class="w-full h-full" aria-hidden="true">' +
+                '<circle cx="12" cy="12" r="10" fill="#FDE68A" stroke="#B45309" stroke-width="1.2"/>' +
+                '<circle cx="8.5" cy="10" r="1.3" fill="#1E1B4B"/><circle cx="15.5" cy="10" r="1.3" fill="#1E1B4B"/>' +
+                '<path d="M8 14.5c1 1.6 2.4 2.4 4 2.4s3-.8 4-2.4" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/></svg>';
+
+            // ---------- Elemen DOM ----------
+            var coinEl     = document.getElementById('star-coin-count');
+            var coinBadge  = document.getElementById('star-coin-badge');
+            var toastEl    = document.getElementById('toast');
+            var gridEl     = document.getElementById('grid-planet');
+            var modal      = document.getElementById('kuis-modal');
+            var panel      = document.getElementById('kuis-panel');
+            var ikonEl     = document.getElementById('kuis-ikon');
+            var judulEl    = document.getElementById('kuis-judul');
+            var hadiahEl   = document.getElementById('kuis-hadiah');
+            var tanyaEl    = document.getElementById('kuis-pertanyaan');
+            var pilihanEl  = document.getElementById('kuis-pilihan');
+            var fbEl       = document.getElementById('kuis-feedback');
+            var fbIkonEl   = document.getElementById('kuis-fb-ikon');
+            var fbJudulEl  = document.getElementById('kuis-fb-judul');
+            var fbTeksEl   = document.getElementById('kuis-fb-teks');
+            var lanjutBtn  = document.getElementById('kuis-lanjut');
+            var tutupBtn   = document.getElementById('kuis-tutup');
+
+            // ---------- State ----------
+            var koinTotal  = parseInt(coinEl.textContent, 10) || 0; // nilai sebenarnya
+            var koinTampil = koinTotal;                              // nilai yang sedang tampil (animasi)
+            var timerKoin  = null;
+            var timerToast = null;
+            var selesai    = {};   // planet yang hadiahnya sudah diambil
+            var planetAktif = null;
+            var soalAktif   = null;
+            var sudahBenar  = false;
+            var fokusSebelum = null;
+
+            // ---------- Sistem Star Coins ----------
+            function denyutKoin() {
+                coinBadge.classList.remove('coin-pop');
+                void coinBadge.offsetWidth; // memulai ulang animasi
+                coinBadge.classList.add('coin-pop');
+            }
+
+            window.setStarCoins = function (nilai) {
+                clearInterval(timerKoin);
+                koinTotal = Math.max(0, parseInt(nilai, 10) || 0);
+                koinTampil = koinTotal;
+                coinEl.textContent = koinTotal;
+                denyutKoin();
             };
 
             window.getStarCoins = function () {
-                return parseInt(coinEl.textContent, 10) || 0;
+                return koinTotal;
             };
 
-            window.showToast = function (message) {
-                toastEl.textContent = message;
-                toastEl.classList.remove('hidden');
-                clearTimeout(toastTimer);
-                toastTimer = setTimeout(function () {
-                    toastEl.classList.add('hidden');
-                }, 2400);
+            // Menambah koin dengan efek hitung naik yang halus
+            window.tambahStarCoins = function (jumlah) {
+                jumlah = parseInt(jumlah, 10) || 0;
+                if (jumlah <= 0) { return; }
+                koinTotal += jumlah;
+                clearInterval(timerKoin);
+                var langkah = Math.max(1, Math.ceil((koinTotal - koinTampil) / 15));
+                timerKoin = setInterval(function () {
+                    koinTampil = Math.min(koinTotal, koinTampil + langkah);
+                    coinEl.textContent = koinTampil;
+                    if (koinTampil >= koinTotal) {
+                        clearInterval(timerKoin);
+                        denyutKoin();
+                    }
+                }, 40);
             };
+
+            // ---------- Toast ----------
+            window.showToast = function (pesan, durasi) {
+                toastEl.textContent = pesan;
+                toastEl.classList.remove('hidden');
+                clearTimeout(timerToast);
+                timerToast = setTimeout(function () {
+                    toastEl.classList.add('hidden');
+                }, durasi || 2400);
+            };
+
+            // ---------- Umpan balik kuis ----------
+            function tampilFeedback(jenis, ikon, judul, teks) {
+                var dasar = 'mt-4 rounded-2xl p-4 text-center border-2 ';
+                fbEl.className = dasar + (jenis === 'sukses'
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                    : 'bg-amber-50 border-amber-300 text-amber-900');
+                fbIkonEl.innerHTML = ikon;
+                fbJudulEl.textContent = judul;
+                fbTeksEl.textContent = teks;
+            }
+
+            // ---------- Membuka & menutup modal ----------
+            function bukaKuis(kartu) {
+                var id   = kartu.getAttribute('data-planet-id');
+                var soal = DATA_KUIS[id];
+
+                if (!soal) {
+                    window.showToast('Soal untuk planet ini sedang disiapkan, tunggu ya, Kapten! 🚀', 3000);
+                    return;
+                }
+
+                planetAktif = {
+                    id:   id,
+                    nama: kartu.getAttribute('data-planet-nama'),
+                    poin: parseInt(kartu.getAttribute('data-poin'), 10) || 0,
+                    ikon: kartu.querySelector('.planet-icon').innerHTML
+                };
+                soalAktif  = soal;
+                sudahBenar = false;
+                fokusSebelum = kartu.querySelector('button');
+
+                ikonEl.innerHTML      = planetAktif.ikon;
+                judulEl.textContent   = planetAktif.nama;
+                hadiahEl.textContent  = '+' + planetAktif.poin + ' Koin';
+                tanyaEl.textContent   = soal.pertanyaan;
+
+                // Bangun tombol pilihan A, B, C
+                pilihanEl.innerHTML = '';
+                Object.keys(soal.pilihan).forEach(function (huruf) {
+                    var tombol = document.createElement('button');
+                    tombol.type = 'button';
+                    tombol.setAttribute('data-huruf', huruf);
+                    tombol.className = 'opsi-jawaban w-full flex items-center gap-3 text-left bg-white border-2 border-violet-200 rounded-2xl px-3 py-3 font-bold text-base transition-colors duration-150 hover:bg-cosmic-accent hover:border-amber-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300';
+
+                    var bulat = document.createElement('span');
+                    bulat.className = 'shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-violet-500 text-white font-black';
+                    bulat.textContent = huruf;
+
+                    var teks = document.createElement('span');
+                    teks.textContent = soal.pilihan[huruf];
+
+                    tombol.appendChild(bulat);
+                    tombol.appendChild(teks);
+                    pilihanEl.appendChild(tombol);
+                });
+
+                fbEl.classList.add('hidden');
+                lanjutBtn.classList.add('hidden');
+
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+
+                var pertama = pilihanEl.querySelector('button');
+                if (pertama) { pertama.focus(); }
+            }
+
+            function tutupKuis() {
+                if (modal.classList.contains('hidden')) { return; }
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+                if (fokusSebelum && typeof fokusSebelum.focus === 'function') {
+                    fokusSebelum.focus();
+                }
+            }
+
+            // ---------- Logika menjawab ----------
+            function tandaiKartuSelesai(id) {
+                var kartu = gridEl.querySelector('[data-planet-id="' + id + '"]');
+                if (!kartu) { return; }
+                var label = kartu.querySelector('.status-teks');
+                if (label) { label.textContent = 'Selesai'; }
+            }
+
+            function pilihJawaban(tombol) {
+                if (sudahBenar) { return; }
+                var huruf = tombol.getAttribute('data-huruf');
+                var semuaOpsi = pilihanEl.querySelectorAll('.opsi-jawaban');
+
+                if (huruf === soalAktif.jawaban) {
+                    // ----- JAWABAN BENAR -----
+                    sudahBenar = true;
+                    Array.prototype.forEach.call(semuaOpsi, function (opsi) {
+                        opsi.disabled = true;
+                        if (opsi === tombol) {
+                            opsi.className = 'opsi-jawaban w-full flex items-center gap-3 text-left bg-emerald-100 border-2 border-emerald-400 rounded-2xl px-3 py-3 font-bold text-base';
+                        } else {
+                            opsi.className = 'opsi-jawaban w-full flex items-center gap-3 text-left bg-white/60 border-2 border-violet-100 rounded-2xl px-3 py-3 font-bold text-base opacity-60';
+                        }
+                    });
+
+                    var pertamaKali = !selesai[planetAktif.id];
+                    if (pertamaKali) {
+                        selesai[planetAktif.id] = true;
+                        window.tambahStarCoins(planetAktif.poin);
+                        tandaiKartuSelesai(planetAktif.id);
+                        tampilFeedback('sukses', IKON_BINTANG,
+                            'Hebat sekali, Kapten! 🎉',
+                            'Jawabanmu benar! ' + soalAktif.penjelasan + ' Kamu mendapat +' + planetAktif.poin + ' Koin Bintang!');
+                    } else {
+                        tampilFeedback('sukses', IKON_BINTANG,
+                            'Benar lagi, keren! 🌟',
+                            soalAktif.penjelasan + ' Koin misi ini sudah kamu dapatkan, yuk coba planet lainnya!');
+                    }
+
+                    fbEl.classList.remove('hidden');
+                    lanjutBtn.classList.remove('hidden');
+                    lanjutBtn.focus();
+                } else {
+                    // ----- JAWABAN SALAH -----
+                    // Titik integrasi Arazka (mentor AI) pada sub-tahap berikutnya.
+                    tombol.disabled = true;
+                    tombol.className = 'opsi-jawaban w-full flex items-center gap-3 text-left bg-rose-50 border-2 border-rose-300 rounded-2xl px-3 py-3 font-bold text-base opacity-70';
+                    tampilFeedback('semangat', IKON_SEMANGAT,
+                        'Ups, belum tepat. Jangan menyerah, ya! 💪',
+                        'Tidak apa-apa, setiap Kapten hebat pernah salah. Ayo pilih jawaban yang lain!');
+                    fbEl.classList.remove('hidden');
+
+                    var berikut = pilihanEl.querySelector('.opsi-jawaban:not([disabled])');
+                    if (berikut) { berikut.focus(); }
+                }
+            }
+
+            // ---------- Event listener ----------
+            // Klik kartu planet (event delegation: 1 listener untuk semua kartu)
+            gridEl.addEventListener('click', function (event) {
+                var kartu = event.target.closest('.planet-card');
+                if (!kartu) { return; }
+
+                if (kartu.classList.contains('is-open')) {
+                    bukaKuis(kartu);
+                } else {
+                    var level = kartu.getAttribute('data-level') || '5';
+                    window.showToast('Selesaikan misi sebelumnya dulu ya, Kapten! 🔒 Planet ini terbuka di Level ' + level + '.', 3200);
+                }
+            });
+
+            // Klik pilihan jawaban
+            pilihanEl.addEventListener('click', function (event) {
+                var tombol = event.target.closest('.opsi-jawaban');
+                if (tombol && !tombol.disabled) { pilihJawaban(tombol); }
+            });
+
+            tutupBtn.addEventListener('click', tutupKuis);
+            lanjutBtn.addEventListener('click', tutupKuis);
+
+            // Klik area gelap di luar panel menutup modal
+            modal.addEventListener('click', function (event) {
+                if (event.target === modal) { tutupKuis(); }
+            });
+
+            // Keyboard: Esc menutup modal, Tab dikunci di dalam modal
+            document.addEventListener('keydown', function (event) {
+                if (modal.classList.contains('hidden')) { return; }
+
+                if (event.key === 'Escape') {
+                    tutupKuis();
+                    return;
+                }
+                if (event.key !== 'Tab') { return; }
+
+                var daftar = Array.prototype.filter.call(
+                    panel.querySelectorAll('button:not([disabled])'),
+                    function (el) { return el.offsetParent !== null; }
+                );
+                if (daftar.length === 0) { return; }
+
+                var pertama = daftar[0];
+                var terakhir = daftar[daftar.length - 1];
+
+                if (!panel.contains(document.activeElement)) {
+                    event.preventDefault();
+                    pertama.focus();
+                } else if (event.shiftKey && document.activeElement === pertama) {
+                    event.preventDefault();
+                    terakhir.focus();
+                } else if (!event.shiftKey && document.activeElement === terakhir) {
+                    event.preventDefault();
+                    pertama.focus();
+                }
+            });
 
             // Tombol Toko Bintang
             document.getElementById('btn-toko-bintang').addEventListener('click', function () {
                 window.showToast('Toko Bintang segera dibuka! Kumpulkan Star Coins dulu ya!');
-            });
-
-            // Tombol "Jelajahi Planet" (event delegation: 1 listener untuk semua kartu)
-            document.getElementById('main-content').addEventListener('click', function (event) {
-                var tombol = event.target.closest('.btn-jelajah');
-                if (!tombol) { return; }
-                window.showToast('Bersiap menuju ' + tombol.getAttribute('data-planet') + '... 🚀');
             });
         })();
     </script>
