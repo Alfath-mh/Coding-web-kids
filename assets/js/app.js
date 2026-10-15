@@ -572,14 +572,16 @@
         if (USER.kacamata) pakaiOutfitItem(USER.kacamata);
     }
         // ============ SHOP FULL (shop.php) ============
+        // ============ SHOP FULL (shop.php) — Pakai DB ============
     function renderShopFull() {
         var grid = document.getElementById('shop-full-grid');
         if (!grid) return;
 
         grid.addEventListener('click', function (e) {
-            var btnBeli = e.target.closest('.btn-beli');
+            var btnBeli  = e.target.closest('.btn-beli');
             var btnPakai = e.target.closest('.btn-pakai');
 
+            // ============ BELI ============
             if (btnBeli && !btnBeli.disabled) {
                 var card = btnBeli.closest('.item-toko');
                 var id = card.getAttribute('data-item-id');
@@ -591,37 +593,70 @@
                     return;
                 }
 
-                ubahKoin(-harga);
-                var saldoEl = document.getElementById('shop-saldo');
-                if (saldoEl) saldoEl.textContent = koinTotal;
-
-                // Ganti tombol jadi "Gunakan"
-                var statusDiv = document.createElement('div');
-                statusDiv.className = 'item-status mt-3 w-full text-center bg-emerald-100 text-emerald-700 font-extrabold text-sm py-2.5 rounded-full';
-                statusDiv.textContent = '✓ Dimiliki';
-
-                var btnGunakan = document.createElement('button');
-                btnGunakan.type = 'button';
-                btnGunakan.className = 'btn-pakai w-full mt-2 bg-violet-500 hover:bg-violet-600 text-white font-extrabold text-sm py-2 rounded-full';
-                btnGunakan.setAttribute('data-item-id', id);
-                btnGunakan.textContent = 'Gunakan 👕';
-
-                btnBeli.replaceWith(statusDiv);
-                statusDiv.insertAdjacentElement('afterend', btnGunakan);
+                btnBeli.disabled = true;
+                btnBeli.textContent = 'Memproses...';
 
                 fetch('api/beli_item.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ item_id: id })
-                }).catch(function () {});
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (!data.ok) {
+                        window.showToast('❌ ' + (data.error || 'Gagal beli'), 3000);
+                        btnBeli.disabled = false;
+                        btnBeli.textContent = 'Beli 🛒';
+                        return;
+                    }
 
-                window.showToast('🎉 ' + nama + ' jadi milikmu!', 2500);
+                    // Update koin lokal (dari server)
+                    ubahKoin(-harga);
+                    var saldoEl = document.getElementById('shop-saldo');
+                    if (saldoEl) saldoEl.textContent = koinTotal;
+
+                    // Ganti tombol
+                    btnBeli.outerHTML = '<div class="mt-3 w-full text-center bg-emerald-100 text-emerald-700 font-extrabold text-sm py-2.5 rounded-full">✓ Dimiliki</div>' +
+                        '<button type="button" class="btn-pakai w-full mt-2 bg-violet-500 hover:bg-violet-600 text-white font-extrabold text-sm py-2 rounded-full" data-item-id="' + id + '">Gunakan 👕</button>';
+
+                    window.showToast('🎉 ' + nama + ' jadi milikmu!', 2500);
+                })
+                .catch(function (err) {
+                    window.showToast('❌ Gagal koneksi ke server', 3000);
+                    btnBeli.disabled = false;
+                    btnBeli.textContent = 'Beli 🛒';
+                });
             }
 
+            // ============ PAKAI ============
             if (btnPakai && !btnPakai.disabled) {
                 var idP = btnPakai.getAttribute('data-item-id');
-                if (typeof pakaiOutfitItem === 'function') pakaiOutfitItem(idP);
-                window.showToast('👕 Berhasil dipakai!', 2500);
+                btnPakai.disabled = true;
+                btnPakai.textContent = 'Memakai...';
+
+                fetch('api/pakai_item.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ item_id: idP })
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    btnPakai.textContent = 'Gunakan 👕';
+                    btnPakai.disabled = false;
+
+                    if (!data.ok) {
+                        window.showToast('❌ ' + (data.error || 'Gagal pakai'), 3000);
+                        return;
+                    }
+
+                    if (typeof pakaiOutfitItem === 'function') pakaiOutfitItem(idP);
+                    window.showToast('👕 Berhasil dipakai!', 2500);
+                })
+                .catch(function () {
+                    btnPakai.textContent = 'Gunakan 👕';
+                    btnPakai.disabled = false;
+                    window.showToast('❌ Gagal koneksi', 3000);
+                });
             }
         });
     }
