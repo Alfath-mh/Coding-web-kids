@@ -1,33 +1,13 @@
 <?php
-// ============================================================
-// planet-detail.php - Halaman detail planet + 5 mode game
-// Parameter URL: ?id=[planet_id]
-// ============================================================
 define('BRIGHT_SPACE', true);
+session_start();
+require __DIR__ . '/config/database.php';
+require_login();
 
-$appName   = 'BRIGHT SPACE';
-$starCoins = 120;
+$appName = 'BRIGHT SPACE';
+$user = current_user();
 
-function e($teks)
-{
-    return htmlspecialchars((string) $teks, ENT_QUOTES, 'UTF-8');
-}
-
-$fileWajib = [
-    __DIR__ . '/config/planets.php',
-    __DIR__ . '/components/arazka-svg.php',
-    __DIR__ . '/components/header.php',
-    __DIR__ . '/components/modal-quiz.php',
-    __DIR__ . '/components/modal-shop.php',
-    __DIR__ . '/assets/js/app.js',
-];
-foreach ($fileWajib as $fileCek) {
-    if (!is_file($fileCek)) {
-        http_response_code(500);
-        exit('BRIGHT SPACE: file tidak ditemukan -> ' . e($fileCek));
-    }
-}
-unset($fileWajib, $fileCek);
+function e($t) { return htmlspecialchars((string) $t, ENT_QUOTES, 'UTF-8'); }
 
 require __DIR__ . '/config/planets.php';
 
@@ -40,267 +20,250 @@ if ($planet['status'] !== 'Terbuka') { header('Location: index.php'); exit; }
 $pageTitle = $planet['nama'] . ' - ' . $appName;
 $arazkaSvg = file_get_contents(__DIR__ . '/components/arazka-svg.php');
 
-$poinKuisOverride = 50;
+$topiUser     = $user['avatar_topi'] ?? null;
+$kacamataUser = $user['avatar_kacamata'] ?? null;
 
-// Item toko untuk modal-shop.php
-$items = [
-    ['id'=>'kacamata-bintang','nama'=>'Kacamata Bintang','deskripsi'=>'Lihat bintang jadi lebih berkilau!','harga'=>40,'ikon'=>'<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#E0F2FE"/><path d="M6 30h4M54 30h4" stroke="#1E1B4B" stroke-width="3" stroke-linecap="round"/><rect x="10" y="22" width="19" height="16" rx="6" fill="#FDE68A" stroke="#1E1B4B" stroke-width="2.5"/><rect x="35" y="22" width="19" height="16" rx="6" fill="#FDE68A" stroke="#1E1B4B" stroke-width="2.5"/><path d="M29 30h6" stroke="#1E1B4B" stroke-width="2.5" stroke-linecap="round"/><polygon points="19.5,26 20.8,29 24,29.2 21.5,31.2 22.4,34.4 19.5,32.6 16.6,34.4 17.5,31.2 15,29.2 18.2,29" fill="#F59E0B"/><polygon points="44.5,26 45.8,29 49,29.2 46.5,31.2 47.4,34.4 44.5,32.6 41.6,34.4 42.5,31.2 40,29.2 43.2,29" fill="#F59E0B"/></svg>'],
-    ['id'=>'topi-astronaut','nama'=>'Topi Astronaut Pastel','deskripsi'=>'Topi lucu untuk Kapten cilik!','harga'=>50,'ikon'=>'<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#EDE9FE"/><line x1="32" y1="20" x2="32" y2="14" stroke="#1E1B4B" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="12" r="3.5" fill="#FCD34D" stroke="#B45309" stroke-width="1.5"/><path d="M12 40a20 20 0 0 1 40 0z" fill="#C4B5FD" stroke="#1E1B4B" stroke-width="2.5" stroke-linejoin="round"/><path d="M18 38a14 14 0 0 1 28 0z" fill="#7DD3FC" stroke="#1E1B4B" stroke-width="2" stroke-linejoin="round"/><path d="M23 32q3-5 8-5" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/><rect x="9" y="38" width="46" height="8" rx="4" fill="#F9A8D4" stroke="#1E1B4B" stroke-width="2.5"/></svg>'],
-    ['id'=>'planet-pelangi','nama'=>'Stiker Planet Pelangi','deskripsi'=>'Planet warna-warni yang ceria!','harga'=>60,'ikon'=>'<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><defs><clipPath id="klip-pelangi2"><circle cx="32" cy="32" r="18"/></clipPath></defs><circle cx="32" cy="32" r="30" fill="#EDE9FE"/><g clip-path="url(#klip-pelangi2)"><rect x="12" y="14" width="40" height="6" fill="#F87171"/><rect x="12" y="20" width="40" height="6" fill="#FB923C"/><rect x="12" y="26" width="40" height="6" fill="#FDE047"/><rect x="12" y="32" width="40" height="6" fill="#4ADE80"/><rect x="12" y="38" width="40" height="6" fill="#60A5FA"/><rect x="12" y="44" width="40" height="6" fill="#A78BFA"/></g><circle cx="32" cy="32" r="18" fill="none" stroke="#1E1B4B" stroke-width="2.5"/><circle cx="25" cy="25" r="3" fill="#FFFFFF" fill-opacity="0.7"/></svg>'],
-    ['id'=>'roket-neon','nama'=>'Roket Neon','deskripsi'=>'Roket bercahaya yang melesat cepat!','harga'=>80,'ikon'=>'<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#312E81"/><path d="M22 36l-7 8 1 6 8-5z" fill="#F472B6"/><path d="M42 36l7 8-1 6-8-5z" fill="#F472B6"/><path d="M32 10c7 5 10 13 10 21 0 5-1 9-2.5 13h-15C23 40 22 36 22 31c0-8 3-16 10-21z" fill="#22D3EE" stroke="#A5F3FC" stroke-width="2" stroke-linejoin="round"/><circle cx="32" cy="27" r="5" fill="#1E1B4B" stroke="#F0ABFC" stroke-width="2"/><path d="M27 46c-1 4 0 8 5 11 5-3 6-7 5-11z" fill="#FDE047" stroke="#FB923C" stroke-width="1.5" stroke-linejoin="round"/></svg>'],
-    ['id'=>'badge-emas','nama'=>'Warna Badge Emas','deskripsi'=>'Badge Koinmu jadi berkilau emas!','harga'=>100,'ikon'=>'<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#FEF3C7"/><polygon points="22,8 30,8 34,26 26,26" fill="#A78BFA"/><polygon points="42,8 34,8 30,26 38,26" fill="#818CF8"/><circle cx="32" cy="39" r="16" fill="#FBBF24" stroke="#B45309" stroke-width="2.5"/><circle cx="32" cy="39" r="11" fill="#FCD34D" stroke="#F59E0B" stroke-width="1.5"/><polygon points="32,31 34.4,36.4 40.2,37 35.8,40.8 37.1,46.5 32,43.5 26.9,46.5 28.2,40.8 23.8,37 29.6,36.4" fill="#FFFFFF" stroke="#B45309" stroke-width="1" stroke-linejoin="round"/></svg>'],
-    ['id'=>'mahkota-galaksi','nama'=>'Mahkota Galaksi','deskripsi'=>'Mahkota spesial untuk Kapten hebat!','harga'=>150,'ikon'=>'<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#FEF3C7"/><path d="M12 44l-3-22 12 10 11-16 11 16 12-10-3 22z" fill="#FCD34D" stroke="#B45309" stroke-width="2.5" stroke-linejoin="round"/><rect x="12" y="44" width="40" height="7" rx="2" fill="#A78BFA" stroke="#1E1B4B" stroke-width="2"/><circle cx="9" cy="21" r="3" fill="#F472B6"/><circle cx="55" cy="21" r="3" fill="#F472B6"/><circle cx="32" cy="15" r="3" fill="#22D3EE"/></svg>'],
-];
+// Ambil soal dari DB per mode
+$soalPerMode = [];
+foreach ($gameModes as $mid => $m) {
+    $soalPerMode[$mid] = get_soal($planet['id'], $m['type'], $m['jumlah_soal']);
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="<?= e($planet['nama']) ?> - 5 mode game edukatif di BRIGHT SPACE.">
-    <meta name="theme-color" content="#E0F2FE">
     <title><?= e($pageTitle) ?></title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        cosmic: {
-                            bg:     '#E0F2FE',
-                            card:   '#EDE9FE',
-                            accent: '#FEF3C7',
-                            text:   '#1E1B4B'
-                        }
-                    },
-                    fontFamily: {
-                        nunito: ['Nunito', 'ui-rounded', 'system-ui', 'sans-serif']
-                    }
-                }
-            }
-        };
+        tailwind.config = { theme: { extend: {
+            colors: { cosmic: { bg: '#E0F2FE', card: '#EDE9FE', accent: '#FEF3C7', text: '#1E1B4B' } },
+            fontFamily: { nunito: ['Nunito', 'ui-rounded', 'system-ui', 'sans-serif'] }
+        } } };
     </script>
-
     <style>
-        @keyframes modal-in {
-            from { opacity: 0; transform: translateY(14px) scale(0.96); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes planet-float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50%      { transform: translateY(-6px) rotate(3deg); }
-        }
-        @keyframes arazka-lompat {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            30%      { transform: translateY(-10px) rotate(-6deg); }
-            60%      { transform: translateY(0) rotate(5deg); }
-        }
-        @keyframes arazka-miring {
-            0%, 100% { transform: rotate(0deg); }
-            50%      { transform: rotate(-7deg); }
-        }
-        @keyframes percik {
-            from { opacity: 1; transform: translate(0, 0) scale(0.4); }
-            to   { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.1); }
-        }
-        @keyframes coin-pop {
-            0%   { transform: scale(1); }
-            50%  { transform: scale(1.18); }
-            100% { transform: scale(1); }
-        }
-        @keyframes glow-pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(167,139,250,0.4); }
-            50%      { box-shadow: 0 0 0 8px rgba(167,139,250,0); }
-        }
-        .modal-panel { animation: modal-in 0.25s ease-out; }
-        .planet-hero-icon { animation: planet-float 3s ease-in-out infinite; }
-        .mode-card:hover { animation: glow-pulse 1.5s ease-in-out infinite; }
-
-        .arazka-wrap .m-senang,
-        .arazka-wrap .m-brow,
-        .arazka-wrap .m-terbuka { display: none; }
-
-        .arazka-wrap[data-mood="selebrasi"] .m-normal,
-        .arazka-wrap[data-mood="selebrasi"] .m-senyum { display: none; }
-        .arazka-wrap[data-mood="selebrasi"] .m-senang,
-        .arazka-wrap[data-mood="selebrasi"] .m-terbuka { display: inline; }
-        .arazka-wrap[data-mood="semangat"] .m-brow { display: inline; }
-
-        .arazka-wrap[data-mood="selebrasi"] .arazka-svg { animation: arazka-lompat 0.7s ease-in-out 3; }
-        .arazka-wrap[data-mood="semangat"] .arazka-svg  { animation: arazka-miring 0.8s ease-in-out 2; }
-
-        .percik {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: 14px;
-            height: 14px;
-            margin: -7px 0 0 -7px;
-            animation: percik 0.9s ease-out forwards;
-        }
-        .coin-pop { animation: coin-pop 0.4s ease-out; }
-
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation: none !important;
-                transition: none !important;
-            }
-        }
+        @keyframes modal-in { from{opacity:0;transform:translateY(14px) scale(0.96);}to{opacity:1;transform:translateY(0) scale(1);} }
+        @keyframes planet-float { 0%,100%{transform:translateY(0) rotate(0);}50%{transform:translateY(-6px) rotate(3deg);} }
+        @keyframes arazka-lompat { 0%,100%{transform:translateY(0) rotate(0);}30%{transform:translateY(-10px) rotate(-6deg);}60%{transform:translateY(0) rotate(5deg);} }
+        @keyframes arazka-miring { 0%,100%{transform:rotate(0);}50%{transform:rotate(-7deg);} }
+        @keyframes percik { from{opacity:1;transform:translate(0,0) scale(0.4);}to{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.1);} }
+        @keyframes coin-pop { 0%{transform:scale(1);}50%{transform:scale(1.18);}100%{transform:scale(1);} }
+        @keyframes timer-pulse { 0%,100%{transform:scale(1);}50%{transform:scale(1.08);} }
+        .modal-panel{animation:modal-in 0.25s ease-out;}
+        .planet-hero-icon{animation:planet-float 3s ease-in-out infinite;}
+        .timer-warning{animation:timer-pulse 1s ease-in-out infinite;}
+        .arazka-wrap .m-senang,.arazka-wrap .m-brow,.arazka-wrap .m-terbuka{display:none;}
+        .arazka-wrap[data-mood="selebrasi"] .m-normal,.arazka-wrap[data-mood="selebrasi"] .m-senyum{display:none;}
+        .arazka-wrap[data-mood="selebrasi"] .m-senang,.arazka-wrap[data-mood="selebrasi"] .m-terbuka{display:inline;}
+        .arazka-wrap[data-mood="semangat"] .m-brow{display:inline;}
+        .arazka-wrap[data-mood="selebrasi"] .arazka-svg{animation:arazka-lompat 0.7s ease-in-out 3;}
+        .arazka-wrap[data-mood="semangat"] .arazka-svg{animation:arazka-miring 0.8s ease-in-out 2;}
+        .percik{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;animation:percik 0.9s ease-out forwards;}
+        .coin-pop{animation:coin-pop 0.4s ease-out;}
+        @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important;}}
     </style>
 </head>
-
 <body class="font-nunito bg-cosmic-bg text-cosmic-text min-h-screen flex flex-col antialiased">
 
     <?php include __DIR__ . '/components/header.php'; ?>
 
-    <main id="main-content" class="max-w-6xl mx-auto px-4 py-6 w-full flex-grow">
-
-        <a href="index.php"
-           class="inline-flex items-center gap-2 bg-white border-2 border-violet-200 hover:border-violet-400 text-cosmic-text font-extrabold text-sm px-4 py-2 rounded-full shadow-sm transition-all duration-150 hover:-translate-x-1 focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M15 18l-6-6 6-6"/>
-            </svg>
-            Kembali ke Dashboard
+    <main class="max-w-4xl mx-auto px-4 py-6 w-full flex-grow">
+        <a href="index.php" class="inline-flex items-center gap-2 bg-white border-2 border-violet-200 hover:border-violet-400 font-extrabold text-sm px-4 py-2 rounded-full shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+            Kembali
         </a>
 
-        <section aria-labelledby="judul-planet"
-                 class="mt-4 relative overflow-hidden bg-gradient-to-br <?= e($planet['gradien']) ?> border-4 <?= e($planet['border']) ?> rounded-3xl p-6 sm:p-8 shadow-lg">
-
-            <svg class="absolute top-3 right-4 w-8 h-8 opacity-40" viewBox="0 0 24 24" aria-hidden="true">
-                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
-                         fill="#FCD34D" stroke="#B45309" stroke-width="0.8"/>
-            </svg>
-
-            <div class="relative flex flex-col sm:flex-row items-center gap-5 sm:gap-7">
-                <div class="planet-hero-icon w-28 h-28 sm:w-36 sm:h-36 shrink-0 drop-shadow-lg">
-                    <?= $planet['ikon'] ?>
-                </div>
-
+        <section class="mt-4 relative overflow-hidden bg-gradient-to-br <?= e($planet['gradien']) ?> border-4 <?= e($planet['border']) ?> rounded-3xl p-6 sm:p-8 shadow-lg">
+            <div class="flex flex-col sm:flex-row items-center gap-5 sm:gap-7">
+                <div class="planet-hero-icon w-28 h-28 sm:w-36 sm:h-36 shrink-0"><?= $planet['ikon'] ?></div>
                 <div class="text-center sm:text-left flex-1">
-                    <p class="inline-block bg-white/70 text-cosmic-text text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-full">
-                        🌍 Pilih Misi
-                    </p>
-                    <h1 id="judul-planet" class="mt-2 text-3xl sm:text-4xl font-black leading-tight">
-                        <?= e($planet['nama']) ?>
-                    </h1>
-                    <p class="mt-1 text-base sm:text-lg font-bold opacity-80">
-                        <?= e($planet['deskripsi']) ?>
-                    </p>
-
-                    <div class="mt-3 flex flex-wrap justify-center sm:justify-start gap-2">
-                        <span class="inline-flex items-center gap-1 bg-white/80 text-emerald-800 text-xs font-extrabold px-3 py-1 rounded-full">
-                            ✅ Status: <?= e($planet['status']) ?>
-                        </span>
-                        <span class="inline-flex items-center gap-1 bg-white/80 text-violet-800 text-xs font-extrabold px-3 py-1 rounded-full">
-                            🎮 5 Mode Tersedia
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <div id="arazka-hero-slot"
-                 class="mt-6 relative bg-white/50 border-2 border-dashed border-violet-300 rounded-2xl p-4 flex items-center gap-4">
-                <div id="arazka-hero-avatar" class="arazka-wrap relative w-20 h-20 sm:w-24 sm:h-24 shrink-0">
-                    <?= $arazkaSvg ?>
-                    <div id="arazka-hero-percik" class="absolute inset-0 pointer-events-none"></div>
-                </div>
-                <div id="arazka-hero-bubble" class="relative flex-1 rounded-2xl border-2 p-3 bg-violet-50 border-violet-200">
-                    <span class="absolute -left-1.5 top-5 w-3 h-3 rotate-45 bg-inherit border-l-2 border-b-2 border-inherit"></span>
-                    <p class="text-xs font-extrabold text-violet-600">Arazka</p>
-                    <p id="arazka-hero-judul" class="text-base font-black leading-snug">Halo, Kapten! 👋</p>
-                    <p id="arazka-hero-teks" class="mt-1 text-sm font-bold leading-snug">
-                        5 mode misi sudah siap! Pilih yang paling kamu suka. Misi Wajib & Koin Bonus memberi Koin Bintang, Mode Santai untuk latihan bebas.
-                    </p>
+                    <span class="inline-block bg-white/70 text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-full">🌍 Pilih Misi</span>
+                    <h1 class="mt-2 text-3xl sm:text-4xl font-black"><?= e($planet['nama']) ?></h1>
+                    <p class="mt-1 text-base font-bold opacity-80"><?= e($planet['deskripsi']) ?></p>
                 </div>
             </div>
         </section>
 
-        <section aria-labelledby="judul-mode" class="mt-8">
-            <h2 id="judul-mode" class="text-2xl sm:text-3xl font-black text-center">
-                Pilih Mode Misi 🚀
-            </h2>
-            <p class="mt-1 text-center text-sm sm:text-base font-bold opacity-80">
-                Ada 5 pilihan misi seru untukmu!
-            </p>
+        <!-- 2 KARTU PERCABANGAN -->
+        <section class="mt-8" id="section-kategori">
+            <h2 class="text-2xl font-black text-center">Pilih Jenis Misi 🎯</h2>
+            <p class="mt-1 text-center text-sm font-bold opacity-80">Ada 2 pilihan misi untukmu!</p>
+
+            <div class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+                <button type="button" class="kategori-card group flex flex-col text-left bg-gradient-to-br from-amber-100 to-yellow-200 border-4 border-amber-300 rounded-3xl p-6 shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all"
+                        data-kategori="wajib">
+                    <div class="text-6xl mb-3 group-hover:scale-110 transition-transform">⭐</div>
+                    <h3 class="text-2xl font-black">Misi Wajib</h3>
+                    <p class="mt-2 text-sm font-bold opacity-80 flex-1">Selesaikan misi utama untuk mengumpulkan Koin Bintang & naik level!</p>
+                    <span class="mt-4 inline-block bg-amber-500 text-white font-extrabold text-center py-2.5 rounded-full">Pilih Misi Wajib →</span>
+                </button>
+
+                <button type="button" class="kategori-card group flex flex-col text-left bg-gradient-to-br from-sky-100 to-cyan-200 border-4 border-sky-300 rounded-3xl p-6 shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all"
+                        data-kategori="side">
+                    <div class="text-6xl mb-3 group-hover:scale-110 transition-transform">💎</div>
+                    <h3 class="text-2xl font-black">Side Quest</h3>
+                    <p class="mt-2 text-sm font-bold opacity-80 flex-1">Tantangan bonus untuk variasi minigame & koin ekstra!</p>
+                    <span class="mt-4 inline-block bg-sky-500 text-white font-extrabold text-center py-2.5 rounded-full">Pilih Side Quest →</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- PILIHAN GAME (muncul setelah pilih kategori) -->
+        <section class="mt-8 hidden" id="section-game">
+            <div class="flex items-center justify-between">
+                <h2 class="text-2xl font-black" id="judul-game">Pilih Game</h2>
+                <button type="button" id="btn-ganti-kategori" class="text-sm font-extrabold text-violet-600 hover:underline">← Ganti Kategori</button>
+            </div>
 
             <div id="mode-container" class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                <?php foreach ($gameModes as $mode):
-                    $badge = $kategoriBadge[$mode['kategori']] ?? $kategoriBadge['santai'];
+                <?php foreach ($gameModes as $mid => $mode):
+                    $badge = $kategoriBadge[$mode['kategori']] ?? $kategoriBadge['side'];
                     $labelReward = ($mode['reward'] > 0) ? '+' . $mode['reward'] . ' Koin' : 'Tanpa Koin';
                 ?>
-                    <article class="mode-card group relative flex flex-col bg-gradient-to-br <?= e($mode['warna']['bg']) ?> border-2 <?= e($mode['warna']['border']) ?> rounded-3xl p-5 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:scale-[1.02]"
-                             data-mode-id="<?= e($mode['id']) ?>"
-                             data-mode-type="<?= e($mode['type']) ?>"
-                             data-mode-reward="<?= (int) $mode['reward'] ?>"
-                             data-mode-kategori="<?= e($mode['kategori']) ?>">
-
-                        <div class="absolute top-3 left-3 <?= e($badge['kelas']) ?> text-xs font-extrabold px-3 py-1 rounded-full shadow-sm">
-                            <?= e($badge['teks']) ?>
-                        </div>
-
-                        <div class="absolute top-3 right-3 bg-white/90 border-2 border-amber-300 text-cosmic-text text-xs font-extrabold px-3 py-1 rounded-full shadow-sm inline-flex items-center gap-1">
-                            <?php if ($mode['reward'] > 0): ?>
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-4 h-4" aria-hidden="true">
-                                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
-                                             fill="#FCD34D" stroke="#B45309" stroke-width="1"/>
-                                </svg>
-                            <?php endif; ?>
-                            <?= e($labelReward) ?>
-                        </div>
-
-                        <div class="text-5xl sm:text-6xl mb-2 mt-4 group-hover:scale-110 transition-transform duration-300">
-                            <?= $mode['ikon'] ?>
-                        </div>
-
-                        <h3 class="text-xl font-black leading-tight">
-                            <?= e($mode['judul']) ?>
-                        </h3>
-
-                        <p class="mt-2 text-sm font-bold leading-snug opacity-80 flex-1">
-                            <?= e($mode['deskripsi']) ?>
-                        </p>
-
+                    <article class="mode-card group relative flex flex-col bg-gradient-to-br <?= e($mode['warna']['bg']) ?> border-2 <?= e($mode['warna']['border']) ?> rounded-3xl p-5 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+                             data-mode-id="<?= e($mid) ?>"
+                             data-kategori="<?= e($mode['kategori']) ?>"
+                             style="display:none;">
+                        <div class="absolute top-3 left-3 <?= e($badge['kelas']) ?> text-xs font-extrabold px-3 py-1 rounded-full"><?= e($badge['teks']) ?></div>
+                        <div class="absolute top-3 right-3 bg-white/90 border-2 border-amber-300 text-xs font-extrabold px-2 py-1 rounded-full"><?= e($labelReward) ?></div>
+                        <div class="text-5xl mb-2 mt-6 group-hover:scale-110 transition-transform"><?= $mode['ikon'] ?></div>
+                        <h3 class="text-xl font-black"><?= e($mode['judul']) ?></h3>
+                        <p class="mt-2 text-sm font-bold opacity-80 flex-1"><?= e($mode['deskripsi']) ?></p>
                         <button type="button"
-                                class="btn-mode w-full mt-4 text-white font-extrabold text-base py-3 rounded-full shadow transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 <?= e($mode['warna']['tombol']) ?>">
+                                class="btn-mode w-full mt-4 text-white font-extrabold text-base py-3 rounded-full shadow <?= e($mode['warna']['tombol']) ?> hover:scale-105">
                             Mulai Game →
                         </button>
                     </article>
                 <?php endforeach; ?>
             </div>
         </section>
-
     </main>
 
-    <?php include __DIR__ . '/components/modal-quiz.php'; ?>
+    <!-- Modal Quiz -->
+    <div id="kuis-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-cosmic-text/70" style="display:none;" role="dialog" aria-modal="true">
+        <div class="modal-panel relative w-full max-w-lg max-h-[92vh] overflow-y-auto bg-cosmic-card border-4 border-cosmic-accent rounded-3xl shadow-2xl p-5 sm:p-6">
+            <button type="button" id="kuis-tutup" class="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full bg-white/80 hover:bg-white">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+
+            <!-- TAHAP SOAL -->
+            <div id="kuis-tahap-soal">
+                <div class="flex items-center gap-3 pr-10">
+                    <div id="kuis-ikon" class="w-14 h-14 shrink-0"></div>
+                    <div class="flex-1">
+                        <p class="text-xs font-extrabold uppercase tracking-wide text-violet-600">Misi Berlangsung</p>
+                        <h2 id="kuis-judul" class="text-lg font-black leading-tight"></h2>
+                    </div>
+                    <div id="kuis-timer-box" class="hidden shrink-0 bg-rose-100 border-2 border-rose-300 rounded-2xl px-3 py-1 text-center">
+                        <p class="text-[10px] font-extrabold uppercase text-rose-700">Waktu</p>
+                        <p id="kuis-timer" class="text-lg font-black text-rose-700 leading-none">05:00</p>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <div class="flex items-center justify-between text-xs font-extrabold mb-1">
+                        <span id="kuis-progress-teks">Soal 1 dari 10</span>
+                        <span id="kuis-progress-benar">✅ 0</span>
+                    </div>
+                    <div class="w-full bg-white/60 rounded-full h-3 overflow-hidden border-2 border-violet-200">
+                        <div id="kuis-progress-bar" class="bg-violet-500 h-full rounded-full transition-all duration-300" style="width:0%;"></div>
+                    </div>
+                </div>
+
+                <p id="kuis-pertanyaan" class="mt-4 text-lg font-extrabold leading-snug"></p>
+                <div id="kuis-pilihan" class="mt-4 grid gap-3"></div>
+
+                <div id="kuis-feedback" class="mt-4 flex items-start gap-3">
+                    <div id="arazka-modal" class="arazka-wrap relative w-14 h-14 shrink-0">
+                        <?= $arazkaSvg ?>
+                        <div id="kuis-percik" class="absolute inset-0 pointer-events-none"></div>
+                    </div>
+                    <div id="kuis-bubble" class="relative flex-1 rounded-2xl border-2 p-3 bg-violet-50 border-violet-200">
+                        <p class="text-xs font-extrabold text-violet-600">Arazka</p>
+                        <p id="kuis-fb-judul" class="text-base font-black"></p>
+                        <p id="kuis-fb-teks" class="mt-1 text-sm font-bold"></p>
+                    </div>
+                </div>
+
+                <button type="button" id="kuis-lanjut" class="hidden w-full mt-4 bg-violet-500 text-white font-extrabold text-base py-3 rounded-full shadow hover:bg-violet-600">
+                    Soal Berikutnya →
+                </button>
+            </div>
+
+            <!-- TAHAP HASIL -->
+            <div id="kuis-tahap-hasil" class="hidden text-center">
+                <div class="text-5xl mb-2">🎉</div>
+                <h2 class="text-2xl font-black">Misi Selesai!</h2>
+
+                <div class="mt-4 mx-auto max-w-xs bg-white border-4 border-cosmic-accent rounded-3xl p-5 shadow-lg">
+                    <p class="text-xs font-extrabold uppercase text-violet-600 mb-1">Skor Kamu</p>
+                    <p class="text-5xl font-black leading-none">
+                        <span id="hasil-benar">0</span><span class="text-2xl opacity-60">/</span><span id="hasil-total">10</span>
+                    </p>
+                    <p id="hasil-akurasi" class="mt-2 text-lg font-extrabold text-violet-700">Akurasi: 0%</p>
+                    <div class="mt-3 w-full bg-violet-100 rounded-full h-3 overflow-hidden">
+                        <div id="hasil-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-700" style="width:0%;"></div>
+                    </div>
+                </div>
+
+                <div id="hasil-reward-box" class="mt-4 inline-flex items-center gap-2 bg-cosmic-accent border-4 border-amber-300 rounded-full pl-2 pr-4 py-2 shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-7 h-7 shrink-0" aria-hidden="true">
+                        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="#FCD34D" stroke="#B45309" stroke-width="1.2" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="text-lg font-black">+<span id="hasil-reward">0</span> Koin Bintang</span>
+                </div>
+
+                <p id="hasil-bonus-teks" class="mt-2 text-sm font-extrabold text-emerald-700 hidden">🌟 Bonus Sempurna! +20%</p>
+
+                <div class="mt-5 flex items-start gap-3 text-left">
+                    <div id="arazka-hasil" class="arazka-wrap relative w-14 h-14 shrink-0">
+                        <?= $arazkaSvg ?>
+                        <div id="hasil-percik" class="absolute inset-0 pointer-events-none"></div>
+                    </div>
+                    <div id="hasil-bubble" class="relative flex-1 rounded-2xl border-2 p-3 bg-emerald-50 border-emerald-300">
+                        <p class="text-xs font-extrabold text-emerald-700">Arazka</p>
+                        <p id="hasil-komentar" class="text-sm font-bold text-emerald-900"></p>
+                    </div>
+                </div>
+
+                <div class="mt-5 grid grid-cols-2 gap-3">
+                    <button type="button" id="hasil-ulang" class="bg-violet-500 hover:bg-violet-600 text-white font-extrabold text-sm py-3 rounded-full shadow">🔁 Coba Lagi</button>
+                    <button type="button" id="hasil-selesai" class="bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-sm py-3 rounded-full shadow">🚀 Ambil & Kembali</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php include __DIR__ . '/components/modal-shop.php'; ?>
 
-    <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] hidden bg-cosmic-text text-white font-bold text-sm px-4 py-2 rounded-full shadow-lg text-center max-w-[90%]" role="status" aria-live="polite"></div>
+    <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] hidden bg-cosmic-text text-white font-bold text-sm px-4 py-2 rounded-full shadow-lg text-center max-w-[90%]"></div>
 
     <footer class="bg-cosmic-card border-t-4 border-cosmic-accent">
-        <div class="max-w-6xl mx-auto px-4 pt-4 pb-24 md:pb-4 text-center text-xs sm:text-sm font-bold">
-            Optimized for Low-Spec School Hardware (RAM 2GB-4GB) | BRIGHT SPACE EdTech
+        <div class="max-w-6xl mx-auto px-4 pt-4 pb-24 md:pb-4 text-center text-xs font-bold">
+            BRIGHT SPACE EdTech
         </div>
     </footer>
 
     <script>
         window.BRIGHT_SPACE = {
-            kuis:      <?= json_encode($kuis, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
-            latihan:   <?= json_encode($latihan, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
-            gameModes: <?= json_encode($gameModes, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
-            planet:    <?= json_encode([
-                'id'   => $planet['id'],
-                'nama' => $planet['nama'],
-                'poin' => $poinKuisOverride,
-                'ikon' => $planet['ikon'],
-            ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+            user: {
+                id: <?= (int) $user['id'] ?>,
+                nama: <?= json_encode($user['nama'], JSON_UNESCAPED_UNICODE) ?>,
+                star_coins: <?= (int) $user['star_coins'] ?>,
+                topi: <?= json_encode($topiUser, JSON_UNESCAPED_UNICODE) ?>,
+                kacamata: <?= json_encode($kacamataUser, JSON_UNESCAPED_UNICODE) ?>
+            },
+            planet: {
+                id: <?= json_encode($planet['id']) ?>,
+                nama: <?= json_encode($planet['nama'], JSON_UNESCAPED_UNICODE) ?>,
+                ikon: <?= json_encode($planet['ikon'], JSON_UNESCAPED_UNICODE) ?>
+            },
+            gameModes: <?= json_encode($gameModes, JSON_UNESCAPED_UNICODE) ?>,
+            soalPerMode: <?= json_encode($soalPerMode, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
         };
     </script>
-
     <script src="assets/js/app.js" defer></script>
 </body>
 </html>

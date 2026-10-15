@@ -1,201 +1,115 @@
 <?php
-// ============================================================
-// index.php - Dashboard BRIGHT SPACE
-// ============================================================
 define('BRIGHT_SPACE', true);
+session_start();
+require __DIR__ . '/config/database.php';
+require_login();
 
 $appName   = 'BRIGHT SPACE';
-$pageTitle = 'BRIGHT SPACE - Petualangan Belajar di Luar Angkasa';
-$starCoins = 120;
+$pageTitle = 'BRIGHT SPACE - Petualangan Belajar';
+$user      = current_user();
 
-function e($teks)
-{
-    return htmlspecialchars((string) $teks, ENT_QUOTES, 'UTF-8');
-}
-
-// --- Cek file wajib ---
-$fileWajib = [
-    __DIR__ . '/config/planets.php',
-    __DIR__ . '/components/arazka-svg.php',
-    __DIR__ . '/components/header.php',
-    __DIR__ . '/components/planet-grid.php',
-    __DIR__ . '/components/modal-shop.php',
-    __DIR__ . '/assets/js/app.js',
-];
-foreach ($fileWajib as $fileCek) {
-    if (!is_file($fileCek)) {
-        http_response_code(500);
-        exit('BRIGHT SPACE: file tidak ditemukan -> ' . e($fileCek));
-    }
-}
-unset($fileWajib, $fileCek);
+function e($t) { return htmlspecialchars((string) $t, ENT_QUOTES, 'UTF-8'); }
 
 require __DIR__ . '/config/planets.php';
 
 $arazkaSvg = file_get_contents(__DIR__ . '/components/arazka-svg.php');
 
-$items = [
-    [
-        'id'        => 'kacamata-bintang',
-        'nama'      => 'Kacamata Bintang',
-        'deskripsi' => 'Lihat bintang jadi lebih berkilau!',
-        'harga'     => 40,
-        'ikon'      => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#E0F2FE"/><path d="M6 30h4M54 30h4" stroke="#1E1B4B" stroke-width="3" stroke-linecap="round"/><rect x="10" y="22" width="19" height="16" rx="6" fill="#FDE68A" stroke="#1E1B4B" stroke-width="2.5"/><rect x="35" y="22" width="19" height="16" rx="6" fill="#FDE68A" stroke="#1E1B4B" stroke-width="2.5"/><path d="M29 30h6" stroke="#1E1B4B" stroke-width="2.5" stroke-linecap="round"/><polygon points="19.5,26 20.8,29 24,29.2 21.5,31.2 22.4,34.4 19.5,32.6 16.6,34.4 17.5,31.2 15,29.2 18.2,29" fill="#F59E0B"/><polygon points="44.5,26 45.8,29 49,29.2 46.5,31.2 47.4,34.4 44.5,32.6 41.6,34.4 42.5,31.2 40,29.2 43.2,29" fill="#F59E0B"/></svg>',
-    ],
-    [
-        'id'        => 'topi-astronaut',
-        'nama'      => 'Topi Astronaut Pastel',
-        'deskripsi' => 'Topi lucu untuk Kapten cilik!',
-        'harga'     => 50,
-        'ikon'      => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#EDE9FE"/><line x1="32" y1="20" x2="32" y2="14" stroke="#1E1B4B" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="12" r="3.5" fill="#FCD34D" stroke="#B45309" stroke-width="1.5"/><path d="M12 40a20 20 0 0 1 40 0z" fill="#C4B5FD" stroke="#1E1B4B" stroke-width="2.5" stroke-linejoin="round"/><path d="M18 38a14 14 0 0 1 28 0z" fill="#7DD3FC" stroke="#1E1B4B" stroke-width="2" stroke-linejoin="round"/><path d="M23 32q3-5 8-5" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/><rect x="9" y="38" width="46" height="8" rx="4" fill="#F9A8D4" stroke="#1E1B4B" stroke-width="2.5"/></svg>',
-    ],
-    [
-        'id'        => 'planet-pelangi',
-        'nama'      => 'Stiker Planet Pelangi',
-        'deskripsi' => 'Planet warna-warni yang ceria!',
-        'harga'     => 60,
-        'ikon'      => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><defs><clipPath id="klip-pelangi"><circle cx="32" cy="32" r="18"/></clipPath></defs><circle cx="32" cy="32" r="30" fill="#EDE9FE"/><g clip-path="url(#klip-pelangi)"><rect x="12" y="14" width="40" height="6" fill="#F87171"/><rect x="12" y="20" width="40" height="6" fill="#FB923C"/><rect x="12" y="26" width="40" height="6" fill="#FDE047"/><rect x="12" y="32" width="40" height="6" fill="#4ADE80"/><rect x="12" y="38" width="40" height="6" fill="#60A5FA"/><rect x="12" y="44" width="40" height="6" fill="#A78BFA"/></g><circle cx="32" cy="32" r="18" fill="none" stroke="#1E1B4B" stroke-width="2.5"/><circle cx="25" cy="25" r="3" fill="#FFFFFF" fill-opacity="0.7"/></svg>',
-    ],
-    [
-        'id'        => 'roket-neon',
-        'nama'      => 'Roket Neon',
-        'deskripsi' => 'Roket bercahaya yang melesat cepat!',
-        'harga'     => 80,
-        'ikon'      => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#312E81"/><path d="M22 36l-7 8 1 6 8-5z" fill="#F472B6"/><path d="M42 36l7 8-1 6-8-5z" fill="#F472B6"/><path d="M32 10c7 5 10 13 10 21 0 5-1 9-2.5 13h-15C23 40 22 36 22 31c0-8 3-16 10-21z" fill="#22D3EE" stroke="#A5F3FC" stroke-width="2" stroke-linejoin="round"/><circle cx="32" cy="27" r="5" fill="#1E1B4B" stroke="#F0ABFC" stroke-width="2"/><path d="M27 46c-1 4 0 8 5 11 5-3 6-7 5-11z" fill="#FDE047" stroke="#FB923C" stroke-width="1.5" stroke-linejoin="round"/></svg>',
-    ],
-    [
-        'id'        => 'badge-emas',
-        'nama'      => 'Warna Badge Emas',
-        'deskripsi' => 'Badge Koinmu jadi berkilau emas!',
-        'harga'     => 100,
-        'ikon'      => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#FEF3C7"/><polygon points="22,8 30,8 34,26 26,26" fill="#A78BFA"/><polygon points="42,8 34,8 30,26 38,26" fill="#818CF8"/><circle cx="32" cy="39" r="16" fill="#FBBF24" stroke="#B45309" stroke-width="2.5"/><circle cx="32" cy="39" r="11" fill="#FCD34D" stroke="#F59E0B" stroke-width="1.5"/><polygon points="32,31 34.4,36.4 40.2,37 35.8,40.8 37.1,46.5 32,43.5 26.9,46.5 28.2,40.8 23.8,37 29.6,36.4" fill="#FFFFFF" stroke="#B45309" stroke-width="1" stroke-linejoin="round"/></svg>',
-    ],
-    [
-        'id'        => 'mahkota-galaksi',
-        'nama'      => 'Mahkota Galaksi',
-        'deskripsi' => 'Mahkota spesial untuk Kapten hebat!',
-        'harga'     => 150,
-        'ikon'      => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#FEF3C7"/><path d="M12 44l-3-22 12 10 11-16 11 16 12-10-3 22z" fill="#FCD34D" stroke="#B45309" stroke-width="2.5" stroke-linejoin="round"/><rect x="12" y="44" width="40" height="7" rx="2" fill="#A78BFA" stroke="#1E1B4B" stroke-width="2"/><circle cx="9" cy="21" r="3" fill="#F472B6"/><circle cx="55" cy="21" r="3" fill="#F472B6"/><circle cx="32" cy="15" r="3" fill="#22D3EE"/></svg>',
-    ],
-];
+// Terapkan outfit Arazka dari DB
+$topiUser     = $user['avatar_topi'] ?? null;
+$kacamataUser = $user['avatar_kacamata'] ?? null;
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="BRIGHT SPACE: platform belajar interaktif bertema luar angkasa untuk siswa Sekolah Dasar.">
-    <meta name="theme-color" content="#E0F2FE">
     <title><?= e($pageTitle) ?></title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        cosmic: {
-                            bg:     '#E0F2FE',
-                            card:   '#EDE9FE',
-                            accent: '#FEF3C7',
-                            text:   '#1E1B4B'
-                        }
-                    },
-                    fontFamily: {
-                        nunito: ['Nunito', 'ui-rounded', 'system-ui', 'sans-serif']
-                    }
-                }
-            }
-        };
+        tailwind.config = { theme: { extend: {
+            colors: { cosmic: { bg: '#E0F2FE', card: '#EDE9FE', accent: '#FEF3C7', text: '#1E1B4B' } },
+            fontFamily: { nunito: ['Nunito', 'ui-rounded', 'system-ui', 'sans-serif'] }
+        } } };
     </script>
-
     <style>
-        @keyframes rocket-wiggle {
-            0%, 100% { transform: rotate(0deg) translateY(0); }
-            25%      { transform: rotate(-8deg) translateY(-2px); }
-            75%      { transform: rotate(8deg) translateY(-2px); }
-        }
-        @keyframes coin-pop {
-            0%   { transform: scale(1); }
-            50%  { transform: scale(1.18); }
-            100% { transform: scale(1); }
-        }
-        @keyframes planet-float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50%      { transform: translateY(-4px) rotate(4deg); }
-        }
-        @keyframes modal-in {
-            from { opacity: 0; transform: translateY(14px) scale(0.96); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes arazka-lompat {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            30%      { transform: translateY(-10px) rotate(-6deg); }
-            60%      { transform: translateY(0) rotate(5deg); }
-        }
-        @keyframes arazka-miring {
-            0%, 100% { transform: rotate(0deg); }
-            50%      { transform: rotate(-7deg); }
-        }
-        @keyframes percik {
-            from { opacity: 1; transform: translate(0, 0) scale(0.4); }
-            to   { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.1); }
-        }
-
-        .logo-link:hover .rocket-icon,
-        .logo-link:focus-visible .rocket-icon {
-            animation: rocket-wiggle 0.6s ease-in-out infinite;
-        }
-        .coin-pop { animation: coin-pop 0.4s ease-out; }
-        .planet-card.is-open:hover .planet-icon,
-        .planet-card.is-open:focus-within .planet-icon {
-            animation: planet-float 1.4s ease-in-out infinite;
-        }
-        .modal-panel { animation: modal-in 0.25s ease-out; }
-
-        .arazka-wrap .m-senang,
-        .arazka-wrap .m-brow,
-        .arazka-wrap .m-terbuka { display: none; }
-
-        .arazka-wrap[data-mood="selebrasi"] .m-normal,
-        .arazka-wrap[data-mood="selebrasi"] .m-senyum { display: none; }
-        .arazka-wrap[data-mood="selebrasi"] .m-senang,
-        .arazka-wrap[data-mood="selebrasi"] .m-terbuka { display: inline; }
-        .arazka-wrap[data-mood="semangat"] .m-brow { display: inline; }
-
-        .arazka-wrap[data-mood="selebrasi"] .arazka-svg { animation: arazka-lompat 0.7s ease-in-out 3; }
-        .arazka-wrap[data-mood="semangat"] .arazka-svg  { animation: arazka-miring 0.8s ease-in-out 2; }
-
-        .percik {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: 14px;
-            height: 14px;
-            margin: -7px 0 0 -7px;
-            animation: percik 0.9s ease-out forwards;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation: none !important;
-                transition: none !important;
-            }
-        }
+        @keyframes coin-pop { 0%{transform:scale(1);}50%{transform:scale(1.18);}100%{transform:scale(1);} }
+        @keyframes planet-float { 0%,100%{transform:translateY(0) rotate(0);}50%{transform:translateY(-4px) rotate(4deg);} }
+        @keyframes modal-in { from{opacity:0;transform:translateY(14px) scale(0.96);}to{opacity:1;transform:translateY(0) scale(1);} }
+        @keyframes arazka-lompat { 0%,100%{transform:translateY(0) rotate(0);}30%{transform:translateY(-10px) rotate(-6deg);}60%{transform:translateY(0) rotate(5deg);} }
+        @keyframes arazka-miring { 0%,100%{transform:rotate(0);}50%{transform:rotate(-7deg);} }
+        @keyframes percik { from{opacity:1;transform:translate(0,0) scale(0.4);}to{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.1);} }
+        .coin-pop{animation:coin-pop 0.4s ease-out;}
+        .planet-card.is-open:hover .planet-icon{animation:planet-float 1.4s ease-in-out infinite;}
+        .modal-panel{animation:modal-in 0.25s ease-out;}
+        .arazka-wrap .m-senang,.arazka-wrap .m-brow,.arazka-wrap .m-terbuka{display:none;}
+        .arazka-wrap[data-mood="selebrasi"] .m-normal,.arazka-wrap[data-mood="selebrasi"] .m-senyum{display:none;}
+        .arazka-wrap[data-mood="selebrasi"] .m-senang,.arazka-wrap[data-mood="selebrasi"] .m-terbuka{display:inline;}
+        .arazka-wrap[data-mood="semangat"] .m-brow{display:inline;}
+        .arazka-wrap[data-mood="selebrasi"] .arazka-svg{animation:arazka-lompat 0.7s ease-in-out 3;}
+        .arazka-wrap[data-mood="semangat"] .arazka-svg{animation:arazka-miring 0.8s ease-in-out 2;}
+        .percik{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;animation:percik 0.9s ease-out forwards;}
+        @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important;}}
     </style>
 </head>
-
 <body class="font-nunito bg-cosmic-bg text-cosmic-text min-h-screen flex flex-col antialiased">
 
     <?php include __DIR__ . '/components/header.php'; ?>
 
-    <main id="main-content" class="max-w-6xl mx-auto px-4 py-8 w-full flex-grow">
-        <?php include __DIR__ . '/components/planet-grid.php'; ?>
+    <main class="max-w-6xl mx-auto px-4 py-8 w-full flex-grow">
+        <section class="mb-8 text-center">
+            <h1 class="text-3xl sm:text-4xl font-black">Halo, Kapten <?= e($user['nama']) ?>! 👋</h1>
+            <p class="mt-2 text-base sm:text-lg font-bold opacity-80">Pilih planet petualanganmu hari ini! 🚀</p>
+        </section>
+
+        <section id="grid-planet" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <?php foreach ($planets as $p): $terbuka = ($p['status'] === 'Terbuka'); ?>
+                <?php if ($terbuka): ?>
+                    <a href="planet-detail.php?id=<?= e($p['id']) ?>"
+                       class="planet-card is-open relative flex flex-col bg-gradient-to-br <?= e($p['gradien']) ?> border-2 <?= e($p['border']) ?> rounded-3xl p-5 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+                       data-planet-id="<?= e($p['id']) ?>">
+                        <div class="planet-icon w-24 h-24 mx-auto mt-6 mb-3"><?= $p['ikon'] ?></div>
+                        <h2 class="text-xl font-black text-center leading-tight"><?= e($p['nama']) ?></h2>
+                        <p class="mt-1 text-sm font-bold text-center opacity-80"><?= e($p['deskripsi']) ?></p>
+                        <div class="mt-3 flex justify-center">
+                            <span class="inline-flex items-center gap-1 bg-white/70 text-emerald-700 text-xs font-extrabold px-3 py-1 rounded-full">✅ <?= e($p['status']) ?></span>
+                        </div>
+                        <div class="mt-auto pt-5">
+                            <span class="block w-full text-center text-white font-extrabold text-sm sm:text-base py-2.5 rounded-full shadow <?= e($p['tombol']) ?>">Jelajahi Planet 🚀</span>
+                        </div>
+                    </a>
+                <?php else: ?>
+                    <article class="planet-card opacity-90 relative flex flex-col bg-gradient-to-br <?= e($p['gradien']) ?> border-2 <?= e($p['border']) ?> rounded-3xl p-5 shadow-md"
+                             data-level="<?= (int) $p['level'] ?>">
+                        <div class="planet-icon w-24 h-24 mx-auto mt-6 mb-3"><?= $p['ikon'] ?></div>
+                        <h2 class="text-xl font-black text-center leading-tight"><?= e($p['nama']) ?></h2>
+                        <p class="mt-1 text-sm font-bold text-center opacity-80"><?= e($p['deskripsi']) ?></p>
+                        <div class="mt-3 flex justify-center">
+                            <span class="inline-flex items-center gap-1 bg-white/70 text-slate-600 text-xs font-extrabold px-3 py-1 rounded-full">🔒 <?= e($p['status']) ?></span>
+                        </div>
+                        <div class="mt-auto pt-5">
+                            <button type="button" class="btn-terkunci w-full bg-gray-200 text-gray-500 font-extrabold text-sm py-2.5 rounded-full cursor-not-allowed">Buka Level <?= (int) $p['level'] ?> 🔒</button>
+                        </div>
+                    </article>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </section>
     </main>
+
+    <!-- Widget Arazka -->
+    <aside id="arazka-widget" class="fixed bottom-4 right-4 z-40 flex items-end gap-2">
+        <div id="arazka-bubble" class="hidden relative max-w-[14rem] sm:max-w-xs bg-white border-2 border-violet-300 rounded-2xl px-3 py-2 shadow-lg" style="display:none;">
+            <p class="text-xs font-extrabold text-violet-600">Arazka</p>
+            <p id="arazka-teks" class="text-sm font-bold leading-snug"></p>
+            <span class="absolute -right-1.5 bottom-5 w-3 h-3 rotate-45 bg-white border-t-2 border-r-2 border-violet-300"></span>
+        </div>
+        <button type="button" id="arazka-btn" aria-expanded="false"
+                class="arazka-wrap w-16 h-16 sm:w-20 sm:h-20 shrink-0 p-1 rounded-full bg-cosmic-card border-4 border-cosmic-accent shadow-lg hover:scale-110 active:scale-95 transition-transform"
+                data-topi="<?= e($topiUser ?? '') ?>"
+                data-kacamata="<?= e($kacamataUser ?? '') ?>">
+            <?= $arazkaSvg ?>
+        </button>
+    </aside>
 
     <?php include __DIR__ . '/components/modal-shop.php'; ?>
 
@@ -203,16 +117,25 @@ $items = [
 
     <footer class="bg-cosmic-card border-t-4 border-cosmic-accent">
         <div class="max-w-6xl mx-auto px-4 pt-4 pb-24 md:pb-4 text-center text-xs sm:text-sm font-bold">
-            Optimized for Low-Spec School Hardware (RAM 2GB-4GB) | BRIGHT SPACE EdTech
+            Optimized for Low-Spec School Hardware | BRIGHT SPACE EdTech
         </div>
     </footer>
 
     <script>
         window.BRIGHT_SPACE = {
-            kuis: <?= json_encode($kuis, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+            user: {
+                id: <?= (int) $user['id'] ?>,
+                nama: <?= json_encode($user['nama'], JSON_UNESCAPED_UNICODE) ?>,
+                star_coins: <?= (int) $user['star_coins'] ?>,
+                topi: <?= json_encode($topiUser, JSON_UNESCAPED_UNICODE) ?>,
+                kacamata: <?= json_encode($kacamataUser, JSON_UNESCAPED_UNICODE) ?>
+            },
+            planetId: null,
+            kuis: [],
+            latihan: [],
+            gameModes: <?= json_encode($gameModes, JSON_UNESCAPED_UNICODE) ?>
         };
     </script>
-
     <script src="assets/js/app.js" defer></script>
 </body>
 </html>
