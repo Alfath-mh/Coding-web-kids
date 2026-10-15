@@ -720,8 +720,8 @@
                 else if (modalAktif === tokoModal) tutupToko();
             }
         });
-
         terapkanOutfitAwal();
+        renderShopDashboard();  
         initArazkaChat();
 
         setTimeout(function () {
@@ -731,9 +731,66 @@
         }, 1200);
     }
 
+       // ============ RENDER SHOP DI DASHBOARD ============
+    function renderShopDashboard() {
+        var grid = document.getElementById('shop-grid');
+        if (!grid) return;
+        if (!ITEM_TOKO || !ITEM_TOKO.length) {
+            grid.innerHTML = '<p class="col-span-full text-center text-sm font-bold text-slate-400 py-4">Item toko belum tersedia.</p>';
+            return;
+        }
+        grid.innerHTML = '';
+        ITEM_TOKO.slice(0, 4).forEach(function (item) {
+            var card = document.createElement('article');
+            card.className = 'item-toko flex flex-col text-center bg-white border-2 border-violet-200 rounded-2xl p-3 hover:shadow-md transition-shadow';
+            card.setAttribute('data-item-id', item.id);
+            card.setAttribute('data-harga', item.harga);
+            card.setAttribute('data-nama', item.nama);
+            card.innerHTML =
+                '<div class="w-14 h-14 mx-auto mb-2">' + item.ikon + '</div>' +
+                '<h4 class="text-xs font-black leading-tight">' + item.nama + '</h4>' +
+                '<div class="mt-2 inline-flex items-center justify-center gap-1 bg-cosmic-accent border-2 border-amber-300 rounded-full px-2 py-0.5 mx-auto">' +
+                    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-3.5 h-3.5"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="#FCD34D" stroke="#B45309" stroke-width="1.2"/></svg>' +
+                    '<span class="text-xs font-extrabold">' + item.harga + '</span>' +
+                '</div>' +
+                '<button type="button" class="btn-beli-dash w-full mt-2 bg-violet-500 hover:bg-violet-600 text-white font-extrabold text-xs py-1.5 rounded-full">Beli</button>';
+            grid.appendChild(card);
+        });
+
+        grid.addEventListener('click', function (e) {
+            var btn = e.target.closest('.btn-beli-dash');
+            if (!btn || btn.disabled) return;
+            var card = btn.closest('.item-toko');
+            var id = card.getAttribute('data-item-id');
+            var harga = parseInt(card.getAttribute('data-harga'), 10) || 0;
+            var nama = card.getAttribute('data-nama');
+
+            if (koinTotal < harga) {
+                window.showToast('Koin belum cukup! Butuh ' + (harga - koinTotal) + ' koin lagi 💪', 3000);
+                return;
+            }
+            ubahKoin(-harga);
+            btn.disabled = true;
+            btn.textContent = 'Dimiliki ✓';
+            btn.className = 'w-full mt-2 bg-emerald-200 text-emerald-800 font-extrabold text-xs py-1.5 rounded-full cursor-default';
+
+            fetch('api/beli_item.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ item_id: id })
+            }).catch(function () {});
+
+            if (typeof pakaiOutfitItem === 'function') pakaiOutfitItem(id);
+            window.showToast('🎉 ' + nama + ' jadi milikmu!', 2500);
+        });
+    }
+
+    // ============ PANGGIL INIT DI AKHIR ============
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
     }
+
 })();
+    
