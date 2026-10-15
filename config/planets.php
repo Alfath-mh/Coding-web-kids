@@ -1,8 +1,7 @@
 <?php
 // ============================================================
 // config/planets.php
-// Sumber data terpusat: planet, kuis misi wajib, latihan tambahan,
-// dan opsi mode game.
+// Sumber data terpusat: planet, kuis, latihan, mode game.
 // ============================================================
 defined('BRIGHT_SPACE') or exit('Akses langsung tidak diizinkan.');
 
@@ -14,7 +13,7 @@ $planets = [
         'id'        => 'matematika',
         'nama'      => 'Planet Matematika',
         'deskripsi' => 'Petualangan Angka & Logika',
-        'poin'      => 20,
+        'poin'      => 50,
         'status'    => 'Terbuka',
         'level'     => 0,
         'gradien'   => 'from-blue-100 to-indigo-200',
@@ -36,7 +35,7 @@ $planets = [
         'id'        => 'sains',
         'nama'      => 'Planet Sains',
         'deskripsi' => 'Eksplorasi Alam & Antariksa',
-        'poin'      => 25,
+        'poin'      => 50,
         'status'    => 'Terbuka',
         'level'     => 0,
         'gradien'   => 'from-emerald-100 to-green-200',
@@ -59,7 +58,7 @@ $planets = [
         'id'        => 'bahasa',
         'nama'      => 'Planet Bahasa',
         'deskripsi' => 'Dunia Kata & Cerita Seru',
-        'poin'      => 15,
+        'poin'      => 50,
         'status'    => 'Terbuka',
         'level'     => 0,
         'gradien'   => 'from-amber-100 to-yellow-200',
@@ -79,7 +78,7 @@ $planets = [
         'id'        => 'seni-coding',
         'nama'      => 'Planet Seni & Coding',
         'deskripsi' => 'Kreasi Gambar & Algoritma',
-        'poin'      => 30,
+        'poin'      => 50,
         'status'    => 'Terkunci',
         'level'     => 5,
         'gradien'   => 'from-purple-100 to-pink-200',
@@ -101,7 +100,7 @@ $planets = [
 ];
 
 // ------------------------------------------------------------
-// Bank Soal MISI WAJIB (reward koin penuh)
+// Bank Soal MISI WAJIB (Kuis Kilat)
 // ------------------------------------------------------------
 $kuis = [
     'matematika' => [
@@ -134,10 +133,20 @@ $kuis = [
             'C' => 'Lawan kata "panjang" adalah "pendek". Coba cari kata yang berlawanan dengan "besar", bukan "panjang"!',
         ],
     ],
+    'seni-coding' => [
+        'pertanyaan'  => 'Perintah "ulangi 3 kali: gambar lingkaran" akan menghasilkan berapa lingkaran?',
+        'pilihan'     => ['A' => '1 lingkaran', 'B' => '2 lingkaran', 'C' => '3 lingkaran'],
+        'jawaban'     => 'C',
+        'penjelasan'  => 'Perintah "ulangi 3 kali" berarti gambarnya dibuat 3 kali.',
+        'umpan_salah' => [
+            'A' => 'Hampir! Tapi "ulangi 3 kali" berarti lebih dari satu. Coba hitung 1, 2, 3!',
+            'B' => 'Dua itu kalau perintahnya "ulangi 2 kali". Nah kalau 3 kali, berarti 3 lingkaran!',
+        ],
+    ],
 ];
 
 // ------------------------------------------------------------
-// Bank Soal LATIHAN TAMBAHAN (soal BERBEDA, tanpa reward koin)
+// Bank Soal LATIHAN TAMBAHAN (soal berbeda, tanpa reward)
 // ------------------------------------------------------------
 $latihan = [
     'matematika' => [
@@ -170,46 +179,107 @@ $latihan = [
             'C' => 'Tinggal satu langkah lagi! Kalimat yang baik diakhiri dengan tanda titik, koma, atau tanda tanya.',
         ],
     ],
+    'seni-coding' => [
+        'pertanyaan'  => 'Warna dasar yang dihasilkan dari campuran biru dan kuning adalah ...',
+        'pilihan'     => ['A' => 'Hijau', 'B' => 'Ungu', 'C' => 'Oranye'],
+        'jawaban'     => 'A',
+        'penjelasan'  => 'Biru dicampur kuning menghasilkan warna hijau.',
+        'umpan_salah' => [
+            'B' => 'Ungu itu campuran biru dan merah. Coba ingat, kalau biru dicampur kuning hasilnya warna daun!',
+            'C' => 'Oranye itu campuran merah dan kuning. Nah kalau biru dicampur kuning, hasilnya warna rumput!',
+        ],
+    ],
 ];
 
 // ------------------------------------------------------------
-// Definisi opsi mode game (dipakai di planet-detail.php)
+// 5 MODE GAME per planet
 // ------------------------------------------------------------
-$modeGame = [
-    'wajib' => [
-        'id'          => 'wajib',
-        'judul'       => 'Misi Wajib',
-        'subjudul'    => 'Kuis Utama',
-        'deskripsi'   => 'Selesaikan misi utama planet ini untuk mengumpulkan Koin Bintang dan membuka level berikutnya.',
-        'ikon'        => '🎯',
-        'label_koin'  => '+ Koin Penuh',
-        'sumber_soal' => 'kuis',
-        'warna'       => [
-            'bg'      => 'from-violet-100 to-indigo-200',
-            'border'  => 'border-indigo-300',
-            'tombol'  => 'bg-indigo-500 hover:bg-indigo-600 focus-visible:ring-indigo-300',
-            'badge'   => 'bg-amber-300 text-amber-900',
+$gameModes = [
+    'kuis' => [
+        'id'        => 'kuis',
+        'type'      => 'kuis',
+        'kategori'  => 'wajib',
+        'judul'     => 'Kuis Kilat Kosmik',
+        'deskripsi' => 'Jawab pertanyaan pilihan ganda dengan cepat dan tepat!',
+        'ikon'      => '⚡',
+        'reward'    => 50,
+        'status'    => 'aktif',
+        'warna'     => [
+            'bg'     => 'from-indigo-100 to-blue-200',
+            'border' => 'border-indigo-300',
+            'tombol' => 'bg-indigo-500 hover:bg-indigo-600 focus-visible:ring-indigo-300',
+        ],
+    ],
+    'puzzle' => [
+        'id'        => 'puzzle',
+        'type'      => 'puzzle',
+        'kategori'  => 'bonus',
+        'judul'     => 'Teka-Teki Kata Angkasa',
+        'deskripsi' => 'Susun huruf acak menjadi kosakata sains/matematika yang benar.',
+        'ikon'      => '🔤',
+        'reward'    => 40,
+        'status'    => 'aktif',
+        'warna'     => [
+            'bg'     => 'from-emerald-100 to-teal-200',
+            'border' => 'border-emerald-300',
+            'tombol' => 'bg-emerald-500 hover:bg-emerald-600 focus-visible:ring-emerald-300',
+        ],
+    ],
+    'story' => [
+        'id'        => 'story',
+        'type'      => 'story',
+        'kategori'  => 'bonus',
+        'judul'     => 'Misi Cerita Arazka',
+        'deskripsi' => 'Bantu Arazka membuat keputusan logis di petualangan luar angkasa.',
+        'ikon'      => '📖',
+        'reward'    => 75,
+        'status'    => 'aktif',
+        'warna'     => [
+            'bg'     => 'from-purple-100 to-pink-200',
+            'border' => 'border-purple-300',
+            'tombol' => 'bg-purple-500 hover:bg-purple-600 focus-visible:ring-purple-300',
+        ],
+    ],
+    'matching' => [
+        'id'        => 'matching',
+        'type'      => 'matching',
+        'kategori'  => 'bonus',
+        'judul'     => 'Cocokkan Rumus & Simbol',
+        'deskripsi' => 'Hubungkan simbol/rumus dengan fungsi atau jawabannya yang tepat.',
+        'ikon'      => '🧩',
+        'reward'    => 60,
+        'status'    => 'aktif',
+        'warna'     => [
+            'bg'     => 'from-amber-100 to-orange-200',
+            'border' => 'border-amber-300',
+            'tombol' => 'bg-amber-500 hover:bg-amber-600 focus-visible:ring-amber-300',
         ],
     ],
     'latihan' => [
-        'id'          => 'latihan',
-        'judul'       => 'Latihan Tambahan',
-        'subjudul'    => 'Opsional',
-        'deskripsi'   => 'Soal tambahan untuk memperkuat pemahamanmu. Tidak wajib, tanpa reward koin, boleh diulang sesuka hati.',
-        'ikon'        => '🎓',
-        'label_koin'  => 'Tanpa Koin',
-        'sumber_soal' => 'latihan',
-        'warna'       => [
-            'bg'      => 'from-emerald-100 to-teal-200',
-            'border'  => 'border-emerald-300',
-            'tombol'  => 'bg-emerald-500 hover:bg-emerald-600 focus-visible:ring-emerald-300',
-            'badge'   => 'bg-sky-300 text-sky-900',
+        'id'        => 'latihan',
+        'type'      => 'latihan',
+        'kategori'  => 'santai',
+        'judul'     => 'Latihan Bebas Eksplorasi',
+        'deskripsi' => 'Mode santai tanpa timer. Soal bebas, tanpa pengaruh ke skor utama.',
+        'ikon'      => '🎓',
+        'reward'    => 0,
+        'status'    => 'aktif',
+        'warna'     => [
+            'bg'     => 'from-slate-100 to-violet-200',
+            'border' => 'border-slate-300',
+            'tombol' => 'bg-violet-500 hover:bg-violet-600 focus-visible:ring-violet-300',
         ],
     ],
 ];
 
+$kategoriBadge = [
+    'wajib'  => ['teks' => '⭐ Misi Wajib',  'kelas' => 'bg-amber-300 text-amber-900'],
+    'bonus'  => ['teks' => '💎 Koin Bonus',  'kelas' => 'bg-sky-300 text-sky-900'],
+    'santai' => ['teks' => '☁️ Mode Santai', 'kelas' => 'bg-emerald-300 text-emerald-900'],
+];
+
 // ------------------------------------------------------------
-// Helper: cari planet berdasarkan ID
+// Helper
 // ------------------------------------------------------------
 function cariPlanet($planets, $id)
 {

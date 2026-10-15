@@ -1,25 +1,23 @@
 <?php
-// ============================================================
 // components/modal-quiz.php
-// Widget Arazka (mengambang) + struktur modal kuis interaktif.
-// ============================================================
 defined('BRIGHT_SPACE') or exit('Akses langsung tidak diizinkan.');
 ?>
-<!-- WIDGET ARAZKA MENGAMBANG -->
 <aside id="arazka-widget" class="fixed bottom-4 right-4 z-40 flex items-end gap-2" aria-label="Arazka, mentor AI BRIGHT SPACE">
-    <div id="arazka-bubble" class="hidden relative max-w-[14rem] sm:max-w-xs bg-white border-2 border-violet-300 rounded-2xl px-3 py-2 shadow-lg" role="status" aria-live="polite">
+    <div id="arazka-bubble" class="hidden relative max-w-[14rem] sm:max-w-xs bg-white border-2 border-violet-300 rounded-2xl px-3 py-2 shadow-lg" style="display: none;" role="status" aria-live="polite">
         <p class="text-xs font-extrabold text-violet-600">Arazka</p>
         <p id="arazka-teks" class="text-sm font-bold leading-snug"></p>
         <span class="absolute -right-1.5 bottom-5 w-3 h-3 rotate-45 bg-white border-t-2 border-r-2 border-violet-300"></span>
     </div>
-    <button type="button" id="arazka-btn" aria-expanded="false" aria-label="Ngobrol dengan Arazka, mentor AI-mu"
+    <button type="button" id="arazka-btn" aria-expanded="false" aria-label="Ngobrol dengan Arazka"
             class="arazka-wrap w-16 h-16 sm:w-20 sm:h-20 shrink-0 p-1 rounded-full bg-cosmic-card border-4 border-cosmic-accent shadow-lg transition-transform duration-150 hover:scale-110 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300">
         <?= $arazkaSvg ?>
     </button>
 </aside>
 
-<!-- MODAL KUIS -->
-<div id="kuis-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-cosmic-text/60"
+<div id="kuis-modal"
+     class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-cosmic-text/60"
+     style="display: none;"
+     data-modal="kuis"
      role="dialog" aria-modal="true" aria-labelledby="kuis-judul">
     <div id="kuis-panel" class="modal-panel relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-cosmic-card border-4 border-cosmic-accent rounded-3xl shadow-2xl p-5 sm:p-6">
 

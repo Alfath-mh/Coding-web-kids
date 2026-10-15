@@ -1,9 +1,7 @@
 <?php
 // ============================================================
-// BRIGHT SPACE - EdTech Platform untuk Siswa SD
-// File utama dashboard: menyiapkan data lalu menyatukan komponen.
+// index.php - Dashboard BRIGHT SPACE
 // ============================================================
-
 define('BRIGHT_SPACE', true);
 
 $appName   = 'BRIGHT SPACE';
@@ -21,7 +19,6 @@ $fileWajib = [
     __DIR__ . '/components/arazka-svg.php',
     __DIR__ . '/components/header.php',
     __DIR__ . '/components/planet-grid.php',
-    __DIR__ . '/components/modal-quiz.php',
     __DIR__ . '/components/modal-shop.php',
     __DIR__ . '/assets/js/app.js',
 ];
@@ -33,13 +30,10 @@ foreach ($fileWajib as $fileCek) {
 }
 unset($fileWajib, $fileCek);
 
-// --- Muat data terpusat ---
 require __DIR__ . '/config/planets.php';
 
-// --- Muat SVG Arazka dari file terpisah ---
 $arazkaSvg = file_get_contents(__DIR__ . '/components/arazka-svg.php');
 
-// --- Data item toko (dipakai modal-shop.php) ---
 $items = [
     [
         'id'        => 'kacamata-bintang',
@@ -203,12 +197,8 @@ $items = [
         <?php include __DIR__ . '/components/planet-grid.php'; ?>
     </main>
 
-   <?php
-// Modal kuis TIDAK di-include di dashboard.
-// Kuis hanya dipicu dari planet-detail.php.
-// Modal toko tetap di sini karena tombolnya ada di header.
-include __DIR__ . '/components/modal-shop.php';
-?>
+    <?php include __DIR__ . '/components/modal-shop.php'; ?>
+
     <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] hidden bg-cosmic-text text-white font-bold text-sm px-4 py-2 rounded-full shadow-lg text-center max-w-[90%]" role="status" aria-live="polite"></div>
 
     <footer class="bg-cosmic-card border-t-4 border-cosmic-accent">

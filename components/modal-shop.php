@@ -1,11 +1,11 @@
 <?php
-// ============================================================
 // components/modal-shop.php
-// Modal Toko Bintang: daftar item, saldo koin, Arazka pendamping.
-// ============================================================
 defined('BRIGHT_SPACE') or exit('Akses langsung tidak diizinkan.');
 ?>
-<div id="toko-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-cosmic-text/60"
+<div id="toko-modal"
+     class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-cosmic-text/60"
+     style="display: none;"
+     data-modal="toko"
      role="dialog" aria-modal="true" aria-labelledby="toko-judul">
     <div class="modal-panel relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-cosmic-card border-4 border-cosmic-accent rounded-3xl shadow-2xl p-5 sm:p-6">
 
@@ -56,7 +56,6 @@ defined('BRIGHT_SPACE') or exit('Akses langsung tidak diizinkan.');
     </div>
 </div>
 
-<!-- Data item toko untuk JS -->
 <script>
     window.BRIGHT_SPACE_ITEMS = <?= json_encode($items, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 </script>

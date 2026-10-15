@@ -1,13 +1,9 @@
 <?php
-// ============================================================
 // components/header.php
-// Navbar sticky: logo, counter Star Coins, dan tombol Toko Bintang.
-// ============================================================
 defined('BRIGHT_SPACE') or exit('Akses langsung tidak diizinkan.');
 ?>
 <header class="sticky top-0 z-50 bg-cosmic-card border-b-4 border-cosmic-accent shadow-md">
     <nav class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3" aria-label="Navigasi utama">
-
         <a href="index.php" class="logo-link flex items-center gap-2 rounded-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-cosmic-accent" aria-label="<?= e($appName) ?> - Beranda">
             <span class="rocket-icon inline-flex items-center justify-center w-11 h-11 rounded-full bg-cosmic-accent shadow-inner">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-7 h-7" aria-hidden="true">

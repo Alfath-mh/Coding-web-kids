@@ -1,13 +1,7 @@
 <?php
-// ============================================================
 // components/planet-grid.php
-// Bagian hero + grid kartu planet belajar.
-// Kartu terbuka = <a> ke planet-detail.php?id=[id]
-// Kartu terkunci = <article> + tombol disabled
-// ============================================================
 defined('BRIGHT_SPACE') or exit('Akses langsung tidak diizinkan.');
 ?>
-<!-- Hero: Judul Bagian Misi -->
 <section aria-labelledby="judul-misi" class="mb-8 text-center">
     <h1 id="judul-misi" class="text-3xl sm:text-4xl font-black">Pilih Planet Petualanganmu!</h1>
     <p class="mt-2 text-base sm:text-lg font-bold opacity-80">
@@ -15,13 +9,11 @@ defined('BRIGHT_SPACE') or exit('Akses langsung tidak diizinkan.');
     </p>
 </section>
 
-<!-- Grid Kartu Planet -->
 <section id="grid-planet" aria-label="Daftar planet belajar" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
     <?php foreach ($planets as $p): ?>
         <?php $terbuka = ($p['status'] === 'Terbuka'); ?>
 
         <?php if ($terbuka): ?>
-            <!-- KARTU TERBUKA -->
             <a href="planet-detail.php?id=<?= e($p['id']) ?>"
                class="planet-card is-open group relative flex flex-col bg-gradient-to-br <?= e($p['gradien']) ?> border-2 <?= e($p['border']) ?> rounded-3xl p-5 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-cosmic-accent"
                aria-labelledby="planet-<?= e($p['id']) ?>"
@@ -60,9 +52,7 @@ defined('BRIGHT_SPACE') or exit('Akses langsung tidak diizinkan.');
                     </span>
                 </div>
             </a>
-
         <?php else: ?>
-            <!-- KARTU TERKUNCI -->
             <article class="planet-card opacity-90 relative flex flex-col bg-gradient-to-br <?= e($p['gradien']) ?> border-2 <?= e($p['border']) ?> rounded-3xl p-5 shadow-md transition-all duration-300"
                      aria-labelledby="planet-<?= e($p['id']) ?>"
                      data-planet-id="<?= e($p['id']) ?>"
