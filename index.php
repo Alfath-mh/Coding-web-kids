@@ -1,7 +1,7 @@
 <?php
 // ============================================================
 // BRIGHT SPACE - EdTech Platform untuk Siswa SD
-// Sub-Tahap 2C: Modal Kuis Interaktif & Sistem Koin Bintang
+// Sub-Tahap 2D: Maskot Arazka (Feedback Adaptif & Apresiasi)
 // Stack: PHP Native + HTML5 + Tailwind (CDN) + Vanilla JS
 // ============================================================
 
@@ -14,6 +14,49 @@ function e($teks)
 {
     return htmlspecialchars((string) $teks, ENT_QUOTES, 'UTF-8');
 }
+
+// ------------------------------------------------------------
+// SVG Maskot Arazka (satu sumber, dipakai di widget & modal).
+// Ekspresi diganti lewat atribut data-mood pada pembungkusnya.
+// ------------------------------------------------------------
+$arazkaSvg = <<<'SVG'
+<svg viewBox="0 0 100 100" class="arazka-svg w-full h-full" aria-hidden="true" focusable="false">
+    <!-- Badan -->
+    <rect x="31" y="74" width="38" height="20" rx="10" fill="#A78BFA" stroke="#1E1B4B" stroke-width="2.5"/>
+    <polygon points="50,78 52,83 57,83.5 53.5,87 54.5,92 50,89.5 45.5,92 46.5,87 43,83.5 48,83" fill="#FCD34D"/>
+    <!-- Antena -->
+    <line x1="50" y1="22" x2="50" y2="13" stroke="#1E1B4B" stroke-width="3" stroke-linecap="round"/>
+    <polygon points="50,1 52,5.5 57,6 53.3,9.2 54.4,14 50,11.5 45.6,14 46.7,9.2 43,6 48,5.5" fill="#FCD34D" stroke="#B45309" stroke-width="1"/>
+    <!-- Helm -->
+    <circle cx="50" cy="48" r="29" fill="#FFFFFF" stroke="#1E1B4B" stroke-width="2.5"/>
+    <circle cx="21" cy="48" r="5" fill="#A78BFA" stroke="#1E1B4B" stroke-width="2"/>
+    <circle cx="79" cy="48" r="5" fill="#A78BFA" stroke="#1E1B4B" stroke-width="2"/>
+    <!-- Kaca helm -->
+    <rect x="22" y="34" width="56" height="30" rx="15" fill="#312E81" stroke="#1E1B4B" stroke-width="2"/>
+    <path d="M30 39q4-3 9-3" fill="none" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="31" cy="57" r="3" fill="#F9A8D4" fill-opacity="0.75"/>
+    <circle cx="69" cy="57" r="3" fill="#F9A8D4" fill-opacity="0.75"/>
+    <!-- Wajah (diatur lewat CSS berdasarkan data-mood) -->
+    <g class="m-normal">
+        <circle cx="40" cy="47" r="4.2" fill="#7DD3FC"/>
+        <circle cx="60" cy="47" r="4.2" fill="#7DD3FC"/>
+    </g>
+    <g class="m-senang" fill="none" stroke="#7DD3FC" stroke-width="3" stroke-linecap="round">
+        <path d="M35 50q5-8 10 0"/>
+        <path d="M55 50q5-8 10 0"/>
+    </g>
+    <g class="m-brow" fill="none" stroke="#7DD3FC" stroke-width="2.5" stroke-linecap="round">
+        <path d="M35 39l10 3"/>
+        <path d="M65 39l-10 3"/>
+    </g>
+    <g class="m-senyum" fill="none" stroke="#7DD3FC" stroke-width="2.5" stroke-linecap="round">
+        <path d="M44 56q6 5 12 0"/>
+    </g>
+    <g class="m-terbuka">
+        <path d="M43 55q7 11 14 0z" fill="#F9A8D4"/>
+    </g>
+</svg>
+SVG;
 
 // ------------------------------------------------------------
 // Data 4 Planet Belajar (SVG ikon ditulis inline agar ringan)
@@ -110,26 +153,40 @@ $planets = [
 ];
 
 // ------------------------------------------------------------
-// Bank Soal Kuis (kunci = id planet). Tambah soal baru di sini.
+// Bank Soal Kuis (kunci = id planet).
+// 'umpan_salah' = petunjuk Arazka yang menyesuaikan dengan
+// jawaban keliru yang dipilih siswa (tanpa membocorkan jawaban).
 // ------------------------------------------------------------
 $kuis = [
     'matematika' => [
-        'pertanyaan' => 'Roket Kapten membawa 8 bintang. Di perjalanan, Kapten menemukan 5 bintang lagi. Berapa jumlah bintang sekarang?',
-        'pilihan'    => ['A' => '12 bintang', 'B' => '14 bintang', 'C' => '13 bintang'],
-        'jawaban'    => 'C',
-        'penjelasan' => '8 ditambah 5 sama dengan 13.',
+        'pertanyaan'  => 'Roket Kapten membawa 8 bintang. Di perjalanan, Kapten menemukan 5 bintang lagi. Berapa jumlah bintang sekarang?',
+        'pilihan'     => ['A' => '12 bintang', 'B' => '14 bintang', 'C' => '13 bintang'],
+        'jawaban'     => 'C',
+        'penjelasan'  => '8 ditambah 5 sama dengan 13.',
+        'umpan_salah' => [
+            'A' => 'Hmm, 12 itu masih kurang satu langkah. Coba hitung maju 5 kali mulai dari angka 8, boleh pakai jari!',
+            'B' => '14 itu terlalu banyak, sepertinya kamu menghitung satu langkah terlalu jauh. Coba hitung maju 5 kali dari angka 8 lagi.',
+        ],
     ],
     'sains' => [
-        'pertanyaan' => 'Planet manakah yang dijuluki "Planet Merah"?',
-        'pilihan'    => ['A' => 'Mars', 'B' => 'Venus', 'C' => 'Saturnus'],
-        'jawaban'    => 'A',
-        'penjelasan' => 'Mars tampak merah karena tanahnya banyak mengandung besi berkarat.',
+        'pertanyaan'  => 'Planet manakah yang dijuluki "Planet Merah"?',
+        'pilihan'     => ['A' => 'Mars', 'B' => 'Venus', 'C' => 'Saturnus'],
+        'jawaban'     => 'A',
+        'penjelasan'  => 'Mars tampak merah karena tanahnya banyak mengandung besi berkarat.',
+        'umpan_salah' => [
+            'B' => 'Venus memang terang sekali, tetapi warnanya kuning keputihan karena awannya tebal. Cari planet yang tanahnya berkarat ya!',
+            'C' => 'Saturnus terkenal dengan cincinnya yang indah, bukan karena warna merahnya. Coba ingat planet tetangga Bumi yang berkarat!',
+        ],
     ],
     'bahasa' => [
-        'pertanyaan' => 'Kata yang berlawanan arti dengan "besar" adalah ...',
-        'pilihan'    => ['A' => 'tinggi', 'B' => 'kecil', 'C' => 'panjang'],
-        'jawaban'    => 'B',
-        'penjelasan' => 'Lawan kata (antonim) dari "besar" adalah "kecil".',
+        'pertanyaan'  => 'Kata yang berlawanan arti dengan "besar" adalah ...',
+        'pilihan'     => ['A' => 'tinggi', 'B' => 'kecil', 'C' => 'panjang'],
+        'jawaban'     => 'B',
+        'penjelasan'  => 'Lawan kata (antonim) dari "besar" adalah "kecil".',
+        'umpan_salah' => [
+            'A' => 'Lawan kata "tinggi" adalah "rendah". Kita sedang mencari lawan kata untuk ukuran "besar" ya!',
+            'C' => 'Lawan kata "panjang" adalah "pendek". Coba cari kata yang berlawanan dengan "besar", bukan "panjang"!',
+        ],
     ],
 ];
 ?>
@@ -189,6 +246,20 @@ $kuis = [
             from { opacity: 0; transform: translateY(14px) scale(0.96); }
             to   { opacity: 1; transform: translateY(0) scale(1); }
         }
+        @keyframes arazka-lompat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            30%      { transform: translateY(-10px) rotate(-6deg); }
+            60%      { transform: translateY(0) rotate(5deg); }
+        }
+        @keyframes arazka-miring {
+            0%, 100% { transform: rotate(0deg); }
+            50%      { transform: rotate(-7deg); }
+        }
+        @keyframes percik {
+            from { opacity: 1; transform: translate(0, 0) scale(0.4); }
+            to   { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.1); }
+        }
+
         .logo-link:hover .rocket-icon,
         .logo-link:focus-visible .rocket-icon {
             animation: rocket-wiggle 0.6s ease-in-out infinite;
@@ -199,6 +270,32 @@ $kuis = [
             animation: planet-float 1.4s ease-in-out infinite;
         }
         .modal-panel { animation: modal-in 0.25s ease-out; }
+
+        /* ---------- Maskot Arazka: ekspresi berdasarkan data-mood ---------- */
+        .arazka-wrap .m-senang,
+        .arazka-wrap .m-brow,
+        .arazka-wrap .m-terbuka { display: none; }
+
+        .arazka-wrap[data-mood="selebrasi"] .m-normal,
+        .arazka-wrap[data-mood="selebrasi"] .m-senyum { display: none; }
+        .arazka-wrap[data-mood="selebrasi"] .m-senang,
+        .arazka-wrap[data-mood="selebrasi"] .m-terbuka { display: inline; }
+        .arazka-wrap[data-mood="semangat"] .m-brow { display: inline; }
+
+        /* Animasi terbatas (beberapa kali saja), bukan terus-menerus */
+        .arazka-wrap[data-mood="selebrasi"] .arazka-svg { animation: arazka-lompat 0.7s ease-in-out 3; }
+        .arazka-wrap[data-mood="semangat"] .arazka-svg  { animation: arazka-miring 0.8s ease-in-out 2; }
+
+        /* Percikan bintang saat jawaban benar */
+        .percik {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 14px;
+            height: 14px;
+            margin: -7px 0 0 -7px;
+            animation: percik 0.9s ease-out forwards;
+        }
 
         /* Hormati pengaturan "kurangi gerakan" milik perangkat */
         @media (prefers-reduced-motion: reduce) {
@@ -347,6 +444,20 @@ $kuis = [
         </section>
     </main>
 
+    <!-- ===================== WIDGET ARAZKA (MENGAMBANG) ===================== -->
+    <aside id="arazka-widget" class="fixed bottom-4 right-4 z-40 flex items-end gap-2" aria-label="Arazka, mentor AI BRIGHT SPACE">
+        <div id="arazka-bubble" class="hidden relative max-w-[14rem] sm:max-w-xs bg-white border-2 border-violet-300 rounded-2xl px-3 py-2 shadow-lg" role="status" aria-live="polite">
+            <p class="text-xs font-extrabold text-violet-600">Arazka</p>
+            <p id="arazka-teks" class="text-sm font-bold leading-snug"></p>
+            <!-- Ekor balon bicara -->
+            <span class="absolute -right-1.5 bottom-5 w-3 h-3 rotate-45 bg-white border-t-2 border-r-2 border-violet-300"></span>
+        </div>
+        <button type="button" id="arazka-btn" aria-expanded="false" aria-label="Ngobrol dengan Arazka, mentor AI-mu"
+                class="arazka-wrap w-16 h-16 sm:w-20 sm:h-20 shrink-0 p-1 rounded-full bg-cosmic-card border-4 border-cosmic-accent shadow-lg transition-transform duration-150 hover:scale-110 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300">
+            <?= $arazkaSvg ?>
+        </button>
+    </aside>
+
     <!-- ===================== MODAL KUIS ===================== -->
     <div id="kuis-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-cosmic-text/60"
          role="dialog" aria-modal="true" aria-labelledby="kuis-judul">
@@ -384,11 +495,19 @@ $kuis = [
             <!-- Pilihan Jawaban (A, B, C) dibuat oleh JavaScript -->
             <div id="kuis-pilihan" class="mt-4 grid gap-3"></div>
 
-            <!-- Umpan Balik (benar / salah) -->
-            <div id="kuis-feedback" class="hidden mt-4 rounded-2xl p-4 text-center border-2" role="status" aria-live="polite">
-                <div id="kuis-fb-ikon" class="w-14 h-14 mx-auto mb-1"></div>
-                <p id="kuis-fb-judul" class="text-lg font-black"></p>
-                <p id="kuis-fb-teks" class="mt-1 text-sm sm:text-base font-bold"></p>
+            <!-- Arazka di dalam modal: sapaan, petunjuk, dan apresiasi -->
+            <div id="kuis-feedback" class="mt-4 flex items-start gap-3" role="status" aria-live="polite">
+                <div id="arazka-modal" class="arazka-wrap relative w-16 h-16 shrink-0">
+                    <?= $arazkaSvg ?>
+                    <div id="kuis-percik" class="absolute inset-0 pointer-events-none"></div>
+                </div>
+                <div id="kuis-bubble" class="relative flex-1 rounded-2xl border-2 p-3 bg-violet-50 border-violet-200">
+                    <!-- Ekor balon bicara -->
+                    <span class="absolute -left-1.5 top-5 w-3 h-3 rotate-45 bg-inherit border-l-2 border-b-2 border-inherit"></span>
+                    <p class="text-xs font-extrabold text-violet-600">Arazka</p>
+                    <p id="kuis-fb-judul" class="text-base font-black leading-snug"></p>
+                    <p id="kuis-fb-teks" class="mt-1 text-sm font-bold leading-snug"></p>
+                </div>
             </div>
 
             <!-- Tombol Lanjut (muncul setelah jawaban benar) -->
@@ -404,7 +523,7 @@ $kuis = [
 
     <!-- ===================== FOOTER ===================== -->
     <footer class="bg-cosmic-card border-t-4 border-cosmic-accent">
-        <div class="max-w-6xl mx-auto px-4 py-4 text-center text-xs sm:text-sm font-bold">
+        <div class="max-w-6xl mx-auto px-4 pt-4 pb-24 md:pb-4 text-center text-xs sm:text-sm font-bold">
             Optimized for Low-Spec School Hardware (RAM 2GB-4GB) | BRIGHT SPACE EdTech
         </div>
     </footer>
@@ -417,21 +536,30 @@ $kuis = [
             // ---------- Data kuis dari PHP ----------
             var DATA_KUIS = <?= json_encode($kuis, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
-            // ---------- Ikon umpan balik (SVG inline) ----------
-            var IKON_BINTANG =
-                '<svg viewBox="0 0 24 24" class="w-full h-full coin-pop" aria-hidden="true">' +
-                '<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="#FCD34D" stroke="#B45309" stroke-width="1.2" stroke-linejoin="round"/></svg>';
-            var IKON_SEMANGAT =
+            // ---------- Ikon & teks Arazka ----------
+            var IKON_BINTANG_KECIL =
                 '<svg viewBox="0 0 24 24" class="w-full h-full" aria-hidden="true">' +
-                '<circle cx="12" cy="12" r="10" fill="#FDE68A" stroke="#B45309" stroke-width="1.2"/>' +
-                '<circle cx="8.5" cy="10" r="1.3" fill="#1E1B4B"/><circle cx="15.5" cy="10" r="1.3" fill="#1E1B4B"/>' +
-                '<path d="M8 14.5c1 1.6 2.4 2.4 4 2.4s3-.8 4-2.4" fill="none" stroke="#1E1B4B" stroke-width="1.6" stroke-linecap="round"/></svg>';
+                '<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="#FCD34D" stroke="#B45309" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+
+            var PEMBUKA_SALAH = [
+                'Hampir tepat! 💪',
+                'Ayo coba lagi, kamu pasti bisa! 🌈',
+                'Semangat, Kapten! Satu langkah lagi! 🚀'
+            ];
+
+            var TIPS = [
+                'Klik kartu planet yang terbuka untuk memulai kuis, ya Kapten! 🚀',
+                'Setiap jawaban benar memberimu Koin Bintang. Yuk kumpulkan sebanyak-banyaknya! ⭐',
+                'Kalau jawabanmu belum tepat, jangan sedih. Aku akan memberi petunjuk! 💡',
+                'Planet Seni & Coding terbuka di Level 5. Semangat naik level! 🔒'
+            ];
 
             // ---------- Elemen DOM ----------
             var coinEl     = document.getElementById('star-coin-count');
             var coinBadge  = document.getElementById('star-coin-badge');
             var toastEl    = document.getElementById('toast');
             var gridEl     = document.getElementById('grid-planet');
+
             var modal      = document.getElementById('kuis-modal');
             var panel      = document.getElementById('kuis-panel');
             var ikonEl     = document.getElementById('kuis-ikon');
@@ -440,27 +568,44 @@ $kuis = [
             var tanyaEl    = document.getElementById('kuis-pertanyaan');
             var pilihanEl  = document.getElementById('kuis-pilihan');
             var fbEl       = document.getElementById('kuis-feedback');
-            var fbIkonEl   = document.getElementById('kuis-fb-ikon');
+            var modalAraz  = document.getElementById('arazka-modal');
+            var percikEl   = document.getElementById('kuis-percik');
+            var bubbleEl   = document.getElementById('kuis-bubble');
             var fbJudulEl  = document.getElementById('kuis-fb-judul');
             var fbTeksEl   = document.getElementById('kuis-fb-teks');
             var lanjutBtn  = document.getElementById('kuis-lanjut');
             var tutupBtn   = document.getElementById('kuis-tutup');
 
+            var wBtn       = document.getElementById('arazka-btn');
+            var wBubble    = document.getElementById('arazka-bubble');
+            var wTeks      = document.getElementById('arazka-teks');
+
             // ---------- State ----------
             var koinTotal  = parseInt(coinEl.textContent, 10) || 0; // nilai sebenarnya
-            var koinTampil = koinTotal;                              // nilai yang sedang tampil (animasi)
+            var koinTampil = koinTotal;                              // nilai yang sedang tampil
             var timerKoin  = null;
             var timerToast = null;
+            var timerWidget = null;
+            var indeksTips = 0;
             var selesai    = {};   // planet yang hadiahnya sudah diambil
             var planetAktif = null;
             var soalAktif   = null;
             var sudahBenar  = false;
+            var jumlahSalah = 0;
+            var dapatKoinBaru = false;
             var fokusSebelum = null;
+
+            // ---------- Util: ganti ekspresi Arazka (sekaligus memulai ulang animasi) ----------
+            function setMood(el, mood) {
+                el.removeAttribute('data-mood');
+                void el.offsetWidth;
+                if (mood) { el.setAttribute('data-mood', mood); }
+            }
 
             // ---------- Sistem Star Coins ----------
             function denyutKoin() {
                 coinBadge.classList.remove('coin-pop');
-                void coinBadge.offsetWidth; // memulai ulang animasi
+                void coinBadge.offsetWidth;
                 coinBadge.classList.add('coin-pop');
             }
 
@@ -503,15 +648,59 @@ $kuis = [
                 }, durasi || 2400);
             };
 
-            // ---------- Umpan balik kuis ----------
-            function tampilFeedback(jenis, ikon, judul, teks) {
-                var dasar = 'mt-4 rounded-2xl p-4 text-center border-2 ';
-                fbEl.className = dasar + (jenis === 'sukses'
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
-                    : 'bg-amber-50 border-amber-300 text-amber-900');
-                fbIkonEl.innerHTML = ikon;
+            // ---------- Widget Arazka (mengambang) ----------
+            function arazkaDiam() {
+                clearTimeout(timerWidget);
+                wBubble.classList.add('hidden');
+                wBtn.setAttribute('aria-expanded', 'false');
+                setMood(wBtn, '');
+            }
+
+            function arazkaBicara(teks, mood, durasi) {
+                wTeks.textContent = teks;
+                wBubble.classList.remove('hidden');
+                wBtn.setAttribute('aria-expanded', 'true');
+                setMood(wBtn, mood || 'halo');
+                clearTimeout(timerWidget);
+                timerWidget = setTimeout(arazkaDiam, durasi || 7000);
+            }
+
+            function tipBerikut() {
+                var totalTerbuka = gridEl.querySelectorAll('.planet-card.is-open').length;
+                if (totalTerbuka > 0 && Object.keys(selesai).length >= totalTerbuka) {
+                    return 'Wow, semua planet yang terbuka sudah kamu taklukkan! Kumpulkan koin terus sampai Planet Seni & Coding terbuka ya! 🏆';
+                }
+                var tip = TIPS[indeksTips % TIPS.length];
+                indeksTips++;
+                return tip;
+            }
+
+            // ---------- Arazka di dalam Modal ----------
+            function percikBintang() {
+                var arah = [[-40, -30], [40, -30], [-46, 2], [46, 2], [-30, 34], [30, 34], [0, -44], [0, 42]];
+                percikEl.innerHTML = '';
+                arah.forEach(function (a) {
+                    var s = document.createElement('span');
+                    s.className = 'percik';
+                    s.style.setProperty('--dx', a[0] + 'px');
+                    s.style.setProperty('--dy', a[1] + 'px');
+                    s.innerHTML = IKON_BINTANG_KECIL;
+                    percikEl.appendChild(s);
+                });
+            }
+
+            function bicaraModal(mood, tema, judul, teks, meriah) {
+                var warna = {
+                    netral:   'bg-violet-50 border-violet-200 text-cosmic-text',
+                    sukses:   'bg-emerald-50 border-emerald-300 text-emerald-900',
+                    semangat: 'bg-amber-50 border-amber-300 text-amber-900'
+                };
+                bubbleEl.className = 'relative flex-1 rounded-2xl border-2 p-3 ' + warna[tema];
                 fbJudulEl.textContent = judul;
                 fbTeksEl.textContent = teks;
+                setMood(modalAraz, mood);
+                percikEl.innerHTML = '';
+                if (meriah) { percikBintang(); }
             }
 
             // ---------- Membuka & menutup modal ----------
@@ -524,20 +713,24 @@ $kuis = [
                     return;
                 }
 
+                arazkaDiam();
+
                 planetAktif = {
                     id:   id,
                     nama: kartu.getAttribute('data-planet-nama'),
                     poin: parseInt(kartu.getAttribute('data-poin'), 10) || 0,
                     ikon: kartu.querySelector('.planet-icon').innerHTML
                 };
-                soalAktif  = soal;
-                sudahBenar = false;
-                fokusSebelum = kartu.querySelector('button');
+                soalAktif     = soal;
+                sudahBenar    = false;
+                jumlahSalah   = 0;
+                dapatKoinBaru = false;
+                fokusSebelum  = kartu.querySelector('button');
 
-                ikonEl.innerHTML      = planetAktif.ikon;
-                judulEl.textContent   = planetAktif.nama;
-                hadiahEl.textContent  = '+' + planetAktif.poin + ' Koin';
-                tanyaEl.textContent   = soal.pertanyaan;
+                ikonEl.innerHTML     = planetAktif.ikon;
+                judulEl.textContent  = planetAktif.nama;
+                hadiahEl.textContent = '+' + planetAktif.poin + ' Koin';
+                tanyaEl.textContent  = soal.pertanyaan;
 
                 // Bangun tombol pilihan A, B, C
                 pilihanEl.innerHTML = '';
@@ -559,8 +752,13 @@ $kuis = [
                     pilihanEl.appendChild(tombol);
                 });
 
-                fbEl.classList.add('hidden');
                 lanjutBtn.classList.add('hidden');
+
+                // Arazka menyapa di awal kuis
+                bicaraModal('halo', 'netral',
+                    'Siap, Kapten? 🚀',
+                    'Baca soalnya pelan-pelan, lalu pilih jawaban A, B, atau C. Aku di sini untuk membantumu!',
+                    false);
 
                 modal.classList.remove('hidden');
                 document.body.classList.add('overflow-hidden');
@@ -575,6 +773,20 @@ $kuis = [
                 document.body.classList.remove('overflow-hidden');
                 if (fokusSebelum && typeof fokusSebelum.focus === 'function') {
                     fokusSebelum.focus();
+                }
+
+                // Arazka merespons setelah modal ditutup
+                var totalTerbuka = gridEl.querySelectorAll('.planet-card.is-open').length;
+                if (sudahBenar && dapatKoinBaru) {
+                    if (Object.keys(selesai).length >= totalTerbuka) {
+                        arazkaBicara('Luar biasa, Kapten! Semua planet terbuka sudah kamu selesaikan. Koinmu sekarang ' + koinTotal + ' ⭐', 'selebrasi', 9000);
+                    } else {
+                        arazkaBicara('Mantap, Kapten! Koinmu sekarang ' + koinTotal + ' ⭐ Yuk pilih planet berikutnya!', 'selebrasi', 8000);
+                    }
+                } else if (sudahBenar) {
+                    arazkaBicara('Latihan yang bagus! Yuk coba planet lain untuk mengumpulkan lebih banyak koin. 🌟', 'halo', 7000);
+                } else {
+                    arazkaBicara('Tidak apa-apa, Kapten! Kamu boleh mencoba lagi kapan saja. Aku selalu siap membantu! 😊', 'semangat', 7000);
                 }
             }
 
@@ -606,29 +818,45 @@ $kuis = [
                     var pertamaKali = !selesai[planetAktif.id];
                     if (pertamaKali) {
                         selesai[planetAktif.id] = true;
+                        dapatKoinBaru = true;
                         window.tambahStarCoins(planetAktif.poin);
                         tandaiKartuSelesai(planetAktif.id);
-                        tampilFeedback('sukses', IKON_BINTANG,
-                            'Hebat sekali, Kapten! 🎉',
-                            'Jawabanmu benar! ' + soalAktif.penjelasan + ' Kamu mendapat +' + planetAktif.poin + ' Koin Bintang!');
+
+                        if (jumlahSalah === 0) {
+                            bicaraModal('selebrasi', 'sukses',
+                                'Hebat sekali, Kapten! 🌟',
+                                'Kamu dapat +' + planetAktif.poin + ' Koin Bintang! Langsung benar, sempurna! ' + soalAktif.penjelasan,
+                                true);
+                        } else {
+                            bicaraModal('selebrasi', 'sukses',
+                                'Kamu pantang menyerah, keren! 🎉',
+                                'Berkat usahamu, kamu dapat +' + planetAktif.poin + ' Koin Bintang! ' + soalAktif.penjelasan,
+                                true);
+                        }
                     } else {
-                        tampilFeedback('sukses', IKON_BINTANG,
+                        bicaraModal('selebrasi', 'sukses',
                             'Benar lagi, keren! 🌟',
-                            soalAktif.penjelasan + ' Koin misi ini sudah kamu dapatkan, yuk coba planet lainnya!');
+                            soalAktif.penjelasan + ' Koin misi ini sudah kamu dapatkan, yuk coba planet lainnya!',
+                            true);
                     }
 
-                    fbEl.classList.remove('hidden');
                     lanjutBtn.classList.remove('hidden');
+                    fbEl.scrollIntoView({ block: 'nearest' });
                     lanjutBtn.focus();
                 } else {
-                    // ----- JAWABAN SALAH -----
-                    // Titik integrasi Arazka (mentor AI) pada sub-tahap berikutnya.
+                    // ----- JAWABAN SALAH: Arazka memberi petunjuk adaptif -----
+                    jumlahSalah++;
                     tombol.disabled = true;
                     tombol.className = 'opsi-jawaban w-full flex items-center gap-3 text-left bg-rose-50 border-2 border-rose-300 rounded-2xl px-3 py-3 font-bold text-base opacity-70';
-                    tampilFeedback('semangat', IKON_SEMANGAT,
-                        'Ups, belum tepat. Jangan menyerah, ya! 💪',
-                        'Tidak apa-apa, setiap Kapten hebat pernah salah. Ayo pilih jawaban yang lain!');
-                    fbEl.classList.remove('hidden');
+
+                    var petunjuk = (soalAktif.umpan_salah && soalAktif.umpan_salah[huruf]) ||
+                                   'Coba baca soalnya sekali lagi dengan teliti ya, Kapten.';
+                    var sisa = pilihanEl.querySelectorAll('.opsi-jawaban:not([disabled])').length;
+                    var tambahan = (sisa === 1) ? ' Tinggal satu pilihan lagi, ayo semangat!' : '';
+                    var pembuka = PEMBUKA_SALAH[(jumlahSalah - 1) % PEMBUKA_SALAH.length];
+
+                    bicaraModal('semangat', 'semangat', pembuka, petunjuk + tambahan, false);
+                    fbEl.scrollIntoView({ block: 'nearest' });
 
                     var berikut = pilihanEl.querySelector('.opsi-jawaban:not([disabled])');
                     if (berikut) { berikut.focus(); }
@@ -661,6 +889,15 @@ $kuis = [
             // Klik area gelap di luar panel menutup modal
             modal.addEventListener('click', function (event) {
                 if (event.target === modal) { tutupKuis(); }
+            });
+
+            // Klik Arazka: tampilkan / sembunyikan balon bicara
+            wBtn.addEventListener('click', function () {
+                if (wBubble.classList.contains('hidden')) {
+                    arazkaBicara(tipBerikut(), 'halo', 8000);
+                } else {
+                    arazkaDiam();
+                }
             });
 
             // Keyboard: Esc menutup modal, Tab dikunci di dalam modal
@@ -698,6 +935,13 @@ $kuis = [
             document.getElementById('btn-toko-bintang').addEventListener('click', function () {
                 window.showToast('Toko Bintang segera dibuka! Kumpulkan Star Coins dulu ya!');
             });
+
+            // Arazka menyapa saat halaman selesai dimuat
+            setTimeout(function () {
+                if (modal.classList.contains('hidden')) {
+                    arazkaBicara('Halo, Kapten! Aku Arazka, mentor luar angkasamu. Pilih satu planet dan mulai petualanganmu! 🚀', 'halo', 9000);
+                }
+            }, 1200);
         })();
     </script>
 </body>
