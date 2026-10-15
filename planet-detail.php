@@ -66,8 +66,8 @@ foreach ($gameModes as $mid => $m) {
     </style>
 </head>
 <body class="font-nunito bg-cosmic-bg text-cosmic-text min-h-screen flex flex-col antialiased">
-
-    <?php include __DIR__ . '/components/header.php'; ?>
+   <?php include __DIR__ . '/components/sidebar.php'; ?>
+<?php include __DIR__ . '/components/header.php'; ?>
 
     <main class="max-w-4xl mx-auto px-4 py-6 w-full flex-grow">
         <a href="index.php" class="inline-flex items-center gap-2 bg-white border-2 border-violet-200 hover:border-violet-400 font-extrabold text-sm px-4 py-2 rounded-full shadow-sm">

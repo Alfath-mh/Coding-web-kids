@@ -54,7 +54,8 @@ $kacamataUser = $user['avatar_kacamata'] ?? null;
 </head>
 <body class="font-nunito bg-cosmic-bg text-cosmic-text min-h-screen flex flex-col antialiased">
 
-    <?php include __DIR__ . '/components/header.php'; ?>
+<?php include __DIR__ . '/components/sidebar.php'; ?>
+ <?php include __DIR__ . '/components/header.php'; ?>
 
     <main class="max-w-6xl mx-auto px-4 py-8 w-full flex-grow">
         <section class="mb-8 text-center">

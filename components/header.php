@@ -7,22 +7,16 @@ $levelUser = $user ? (int) $user['level'] : 1;
 ?>
 <header class="sticky top-0 z-50 bg-cosmic-card border-b-4 border-cosmic-accent shadow-md">
     <nav class="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
+
+        <!-- KIRI: beri ruang untuk tombol hamburger yang fixed -->
+        <div class="flex items-center gap-3 ml-12">
             <a href="index.php" class="flex items-center gap-2">
-                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-cosmic-accent shadow-inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6" aria-hidden="true">
-                        <path d="M9.5 17.5c-.5 1.6-.3 3.2.5 4.5 1-.6 1.6-1.2 2-2 .4.8 1 1.4 2 2 .8-1.3 1-2.9.5-4.5z" fill="#FB923C"/>
-                        <path d="M8 11.5 4.5 15l.5 3 3.5-2z" fill="#A78BFA"/>
-                        <path d="M16 11.5 19.5 15l-.5 3-3.5-2z" fill="#A78BFA"/>
-                        <path d="M12 1.5c3 2 4.8 5.6 4.8 9.6 0 2.2-.4 4.2-1.1 6.4H8.3c-.7-2.2-1.1-4.2-1.1-6.4 0-4 1.8-7.6 4.8-9.6z" fill="#F8FAFC" stroke="#1E1B4B" stroke-width="1.2" stroke-linejoin="round"/>
-                        <circle cx="12" cy="10" r="2.2" fill="#7DD3FC" stroke="#1E1B4B" stroke-width="1.2"/>
-                    </svg>
-                </span>
                 <span class="hidden sm:inline text-lg font-black">BRIGHT <span class="text-violet-600">SPACE</span></span>
             </a>
             <a href="index.php" class="hidden md:inline-flex items-center gap-1 text-sm font-extrabold px-3 py-1.5 rounded-full hover:bg-white/60">🗺️ Peta Planet</a>
         </div>
 
+        <!-- KANAN: Koin + Toko + Profil -->
         <div class="flex items-center gap-2">
             <div id="star-coin-badge" class="flex items-center gap-1 bg-cosmic-accent border-2 border-amber-300 rounded-full pl-1.5 pr-2.5 py-1 shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5 shrink-0" aria-hidden="true">
@@ -39,6 +33,7 @@ $levelUser = $user ? (int) $user['level'] : 1;
                 <span class="hidden sm:inline">Toko</span>
             </button>
 
+            <!-- Tombol Profil + Logout -->
             <div class="relative">
                 <button type="button" id="btn-profil" aria-haspopup="true" aria-expanded="false"
                         class="flex items-center gap-2 bg-white hover:bg-violet-50 border-2 border-violet-200 rounded-full pl-1 pr-3 py-1 shadow-sm">
@@ -47,7 +42,8 @@ $levelUser = $user ? (int) $user['level'] : 1;
                     </span>
                     <span class="hidden sm:inline text-sm font-extrabold max-w-[80px] truncate"><?= htmlspecialchars($namaUser) ?></span>
                 </button>
-                <div id="profil-dropdown" class="hidden absolute right-0 mt-2 w-56 bg-white border-2 border-violet-200 rounded-2xl shadow-xl p-3 z-50">
+
+                <div id="profil-dropdown" class="hidden absolute right-0 mt-2 w-56 bg-white border-2 border-violet-200 rounded-2xl shadow-xl p-3 z-50" style="display:none;">
                     <div class="pb-2 border-b-2 border-violet-100">
                         <p class="text-xs font-extrabold uppercase text-violet-600">Kapten</p>
                         <p class="text-lg font-black truncate"><?= htmlspecialchars($namaUser) ?></p>
@@ -66,9 +62,12 @@ document.addEventListener('click', function (e) {
     var dd  = document.getElementById('profil-dropdown');
     if (!btn || !dd) return;
     if (btn.contains(e.target)) {
+        var buka = dd.classList.contains('hidden');
         dd.classList.toggle('hidden');
+        dd.style.display = buka ? '' : 'none';
     } else if (!dd.contains(e.target)) {
         dd.classList.add('hidden');
+        dd.style.display = 'none';
     }
 });
 </script>

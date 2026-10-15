@@ -71,13 +71,18 @@
             if (koinTampil === koinTotal) { clearInterval(timerKoin); denyutKoin(); }
         }, 40);
     }
-    function ubahKoin(selisih) {
-        selisih = parseInt(selisih, 10) || 0;
-        if (!selisih) return;
-        koinTotal = Math.max(0, koinTotal + selisih);
-        tampilSaldoToko();
-        animasiKoin();
-    }
+       function ubahKoin(selisih) {
+       selisih = parseInt(selisih, 10) || 0;
+       if (!selisih) return;
+       koinTotal = Math.max(0, koinTotal + selisih);
+       tampilSaldoToko();
+       var sk = document.getElementById('sidebar-koin');
+       if (sk) sk.textContent = koinTotal;
+       animasiKoin();
+       var sk = document.getElementById('sidebar-koin');
+if (sk) sk.textContent = koinTotal;
+   }
+
     window.showToast = function (pesan, durasi) {
         if (!toastEl) return;
         toastEl.textContent = pesan;
