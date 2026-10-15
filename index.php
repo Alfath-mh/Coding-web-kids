@@ -1,7 +1,7 @@
 <?php
 // ============================================================
 // BRIGHT SPACE - EdTech Platform untuk Siswa SD
-// Sub-Tahap 2D: Maskot Arazka (Feedback Adaptif & Apresiasi)
+// Sub-Tahap 2E: Toko Virtual (Penukaran Koin Bintang)
 // Stack: PHP Native + HTML5 + Tailwind (CDN) + Vanilla JS
 // ============================================================
 
@@ -189,6 +189,104 @@ $kuis = [
         ],
     ],
 ];
+
+// ------------------------------------------------------------
+// Daftar Item Toko Bintang (ikon SVG inline, harga dalam koin)
+// ------------------------------------------------------------
+$items = [
+    [
+        'id'        => 'kacamata-bintang',
+        'nama'      => 'Kacamata Bintang',
+        'deskripsi' => 'Lihat bintang jadi lebih berkilau!',
+        'harga'     => 40,
+        'ikon'      => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true">
+                <circle cx="32" cy="32" r="30" fill="#E0F2FE"/>
+                <path d="M6 30h4M54 30h4" stroke="#1E1B4B" stroke-width="3" stroke-linecap="round"/>
+                <rect x="10" y="22" width="19" height="16" rx="6" fill="#FDE68A" stroke="#1E1B4B" stroke-width="2.5"/>
+                <rect x="35" y="22" width="19" height="16" rx="6" fill="#FDE68A" stroke="#1E1B4B" stroke-width="2.5"/>
+                <path d="M29 30h6" stroke="#1E1B4B" stroke-width="2.5" stroke-linecap="round"/>
+                <polygon points="19.5,26 20.8,29 24,29.2 21.5,31.2 22.4,34.4 19.5,32.6 16.6,34.4 17.5,31.2 15,29.2 18.2,29" fill="#F59E0B"/>
+                <polygon points="44.5,26 45.8,29 49,29.2 46.5,31.2 47.4,34.4 44.5,32.6 41.6,34.4 42.5,31.2 40,29.2 43.2,29" fill="#F59E0B"/>
+            </svg>',
+    ],
+    [
+        'id'        => 'topi-astronaut',
+        'nama'      => 'Topi Astronaut Pastel',
+        'deskripsi' => 'Topi lucu untuk Kapten cilik!',
+        'harga'     => 50,
+        'ikon'      => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true">
+                <circle cx="32" cy="32" r="30" fill="#EDE9FE"/>
+                <line x1="32" y1="20" x2="32" y2="14" stroke="#1E1B4B" stroke-width="2.5" stroke-linecap="round"/>
+                <circle cx="32" cy="12" r="3.5" fill="#FCD34D" stroke="#B45309" stroke-width="1.5"/>
+                <path d="M12 40a20 20 0 0 1 40 0z" fill="#C4B5FD" stroke="#1E1B4B" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M18 38a14 14 0 0 1 28 0z" fill="#7DD3FC" stroke="#1E1B4B" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M23 32q3-5 8-5" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+                <rect x="9" y="38" width="46" height="8" rx="4" fill="#F9A8D4" stroke="#1E1B4B" stroke-width="2.5"/>
+            </svg>',
+    ],
+    [
+        'id'        => 'planet-pelangi',
+        'nama'      => 'Stiker Planet Pelangi',
+        'deskripsi' => 'Planet warna-warni yang ceria!',
+        'harga'     => 60,
+        'ikon'      => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true">
+                <defs><clipPath id="klip-pelangi"><circle cx="32" cy="32" r="18"/></clipPath></defs>
+                <circle cx="32" cy="32" r="30" fill="#EDE9FE"/>
+                <g clip-path="url(#klip-pelangi)">
+                    <rect x="12" y="14" width="40" height="6" fill="#F87171"/>
+                    <rect x="12" y="20" width="40" height="6" fill="#FB923C"/>
+                    <rect x="12" y="26" width="40" height="6" fill="#FDE047"/>
+                    <rect x="12" y="32" width="40" height="6" fill="#4ADE80"/>
+                    <rect x="12" y="38" width="40" height="6" fill="#60A5FA"/>
+                    <rect x="12" y="44" width="40" height="6" fill="#A78BFA"/>
+                </g>
+                <circle cx="32" cy="32" r="18" fill="none" stroke="#1E1B4B" stroke-width="2.5"/>
+                <circle cx="25" cy="25" r="3" fill="#FFFFFF" fill-opacity="0.7"/>
+            </svg>',
+    ],
+    [
+        'id'        => 'roket-neon',
+        'nama'      => 'Roket Neon',
+        'deskripsi' => 'Roket bercahaya yang melesat cepat!',
+        'harga'     => 80,
+        'ikon'      => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true">
+                <circle cx="32" cy="32" r="30" fill="#312E81"/>
+                <path d="M22 36l-7 8 1 6 8-5z" fill="#F472B6"/>
+                <path d="M42 36l7 8-1 6-8-5z" fill="#F472B6"/>
+                <path d="M32 10c7 5 10 13 10 21 0 5-1 9-2.5 13h-15C23 40 22 36 22 31c0-8 3-16 10-21z" fill="#22D3EE" stroke="#A5F3FC" stroke-width="2" stroke-linejoin="round"/>
+                <circle cx="32" cy="27" r="5" fill="#1E1B4B" stroke="#F0ABFC" stroke-width="2"/>
+                <path d="M27 46c-1 4 0 8 5 11 5-3 6-7 5-11z" fill="#FDE047" stroke="#FB923C" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>',
+    ],
+    [
+        'id'        => 'badge-emas',
+        'nama'      => 'Warna Badge Emas',
+        'deskripsi' => 'Badge Koinmu jadi berkilau emas!',
+        'harga'     => 100,
+        'ikon'      => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true">
+                <circle cx="32" cy="32" r="30" fill="#FEF3C7"/>
+                <polygon points="22,8 30,8 34,26 26,26" fill="#A78BFA"/>
+                <polygon points="42,8 34,8 30,26 38,26" fill="#818CF8"/>
+                <circle cx="32" cy="39" r="16" fill="#FBBF24" stroke="#B45309" stroke-width="2.5"/>
+                <circle cx="32" cy="39" r="11" fill="#FCD34D" stroke="#F59E0B" stroke-width="1.5"/>
+                <polygon points="32,31 34.4,36.4 40.2,37 35.8,40.8 37.1,46.5 32,43.5 26.9,46.5 28.2,40.8 23.8,37 29.6,36.4" fill="#FFFFFF" stroke="#B45309" stroke-width="1" stroke-linejoin="round"/>
+            </svg>',
+    ],
+    [
+        'id'        => 'mahkota-galaksi',
+        'nama'      => 'Mahkota Galaksi',
+        'deskripsi' => 'Mahkota spesial untuk Kapten hebat!',
+        'harga'     => 150,
+        'ikon'      => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true">
+                <circle cx="32" cy="32" r="30" fill="#FEF3C7"/>
+                <path d="M12 44l-3-22 12 10 11-16 11 16 12-10-3 22z" fill="#FCD34D" stroke="#B45309" stroke-width="2.5" stroke-linejoin="round"/>
+                <rect x="12" y="44" width="40" height="7" rx="2" fill="#A78BFA" stroke="#1E1B4B" stroke-width="2"/>
+                <circle cx="9" cy="21" r="3" fill="#F472B6"/>
+                <circle cx="55" cy="21" r="3" fill="#F472B6"/>
+                <circle cx="32" cy="15" r="3" fill="#22D3EE"/>
+            </svg>',
+    ],
+];
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -286,7 +384,7 @@ $kuis = [
         .arazka-wrap[data-mood="selebrasi"] .arazka-svg { animation: arazka-lompat 0.7s ease-in-out 3; }
         .arazka-wrap[data-mood="semangat"] .arazka-svg  { animation: arazka-miring 0.8s ease-in-out 2; }
 
-        /* Percikan bintang saat jawaban benar */
+        /* Percikan bintang saat berhasil */
         .percik {
             position: absolute;
             left: 50%;
@@ -350,7 +448,7 @@ $kuis = [
                 </div>
 
                 <!-- Tombol Toko Bintang -->
-                <button type="button" id="btn-toko-bintang"
+                <button type="button" id="btn-toko-bintang" aria-haspopup="dialog"
                         class="flex items-center gap-1.5 bg-violet-500 text-white font-extrabold text-sm sm:text-base px-3 sm:px-4 py-2 rounded-full shadow-md transition-transform duration-150 hover:scale-105 hover:bg-violet-600 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-cosmic-accent">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M3 9l1.5-5h15L21 9"/>
@@ -518,6 +616,98 @@ $kuis = [
         </div>
     </div>
 
+    <!-- ===================== MODAL TOKO BINTANG ===================== -->
+    <div id="toko-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-cosmic-text/60"
+         role="dialog" aria-modal="true" aria-labelledby="toko-judul">
+        <div class="modal-panel relative flex flex-col w-full max-w-2xl max-h-[90vh] overflow-hidden bg-cosmic-card border-4 border-cosmic-accent rounded-3xl shadow-2xl p-5 sm:p-6">
+
+            <!-- Tombol Tutup (X) -->
+            <button type="button" id="toko-tutup" aria-label="Tutup toko"
+                    class="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full bg-white/80 text-cosmic-text transition-transform duration-150 hover:scale-110 hover:bg-white focus:outline-none focus-visible:ring-4 focus-visible:ring-cosmic-accent">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6L6 18"/>
+                </svg>
+            </button>
+
+            <!-- Bagian atas (tetap terlihat): judul, saldo, dan Arazka -->
+            <div class="shrink-0">
+                <div class="flex items-center gap-3 pr-10">
+                    <div class="w-12 h-12 shrink-0 flex items-center justify-center rounded-full bg-cosmic-accent shadow-inner">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-7 h-7 text-violet-600" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3 9l1.5-5h15L21 9"/>
+                            <path d="M3 9c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3"/>
+                            <path d="M5 12v8h14v-8"/>
+                            <path d="M10 20v-4h4v4"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs font-extrabold uppercase tracking-wide text-violet-600">Tukar Koin Bintang</p>
+                        <h2 id="toko-judul" class="text-xl sm:text-2xl font-black leading-tight">Toko Bintang</h2>
+                    </div>
+                </div>
+
+                <!-- Saldo koin -->
+                <div class="mt-3 inline-flex items-center gap-1.5 bg-cosmic-accent border-2 border-amber-300 rounded-full pl-1.5 pr-3 py-0.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5 shrink-0" aria-hidden="true">
+                        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
+                                 fill="#FCD34D" stroke="#B45309" stroke-width="1.2" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="text-sm font-extrabold">Koinmu: <span id="toko-saldo"><?= (int) $starCoins ?></span></span>
+                </div>
+
+                <!-- Arazka di toko -->
+                <div class="mt-3 flex items-start gap-3" role="status" aria-live="polite">
+                    <div id="arazka-toko" class="arazka-wrap relative w-16 h-16 shrink-0">
+                        <?= $arazkaSvg ?>
+                        <div id="toko-percik" class="absolute inset-0 pointer-events-none"></div>
+                    </div>
+                    <div id="toko-bubble" class="relative flex-1 rounded-2xl border-2 p-3 bg-violet-50 border-violet-200">
+                        <span class="absolute -left-1.5 top-5 w-3 h-3 rotate-45 bg-inherit border-l-2 border-b-2 border-inherit"></span>
+                        <p class="text-xs font-extrabold text-violet-600">Arazka</p>
+                        <p id="toko-fb-judul" class="text-base font-black leading-snug"></p>
+                        <p id="toko-fb-teks" class="mt-1 text-sm font-bold leading-snug"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid item toko (bagian ini yang bisa digulir) -->
+            <div class="mt-4 flex-1 min-h-0 overflow-y-auto pr-1">
+                <div id="toko-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <?php foreach ($items as $it): ?>
+                        <article class="item-toko flex flex-col text-center bg-white/80 border-2 border-violet-200 rounded-2xl p-3 transition-colors duration-200"
+                                 data-item-id="<?= e($it['id']) ?>"
+                                 data-harga="<?= (int) $it['harga'] ?>"
+                                 data-nama="<?= e($it['nama']) ?>">
+                            <div class="w-16 h-16 mx-auto"><?= $it['ikon'] ?></div>
+                            <h3 class="mt-2 text-sm sm:text-base font-black leading-tight"><?= e($it['nama']) ?></h3>
+                            <p class="mt-1 text-xs font-bold opacity-75 leading-snug"><?= e($it['deskripsi']) ?></p>
+
+                            <!-- Harga -->
+                            <div class="mt-2 mx-auto inline-flex items-center gap-1 bg-cosmic-accent border-2 border-amber-300 rounded-full pl-1 pr-2.5 py-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-4 h-4 shrink-0" aria-hidden="true">
+                                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
+                                             fill="#FCD34D" stroke="#B45309" stroke-width="1.2" stroke-linejoin="round"/>
+                                </svg>
+                                <span class="text-sm font-extrabold leading-none"><?= (int) $it['harga'] ?> Koin</span>
+                            </div>
+
+                            <!-- Status -->
+                            <span class="item-status mt-1 text-xs font-extrabold text-violet-600">Tersedia</span>
+
+                            <!-- Tombol Beli -->
+                            <div class="mt-auto pt-2">
+                                <button type="button"
+                                        class="btn-beli w-full bg-violet-500 text-white font-extrabold text-sm py-2 rounded-full shadow transition-all duration-150 hover:scale-105 hover:bg-violet-600 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300">
+                                    Beli
+                                </button>
+                            </div>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ===================== TOAST NOTIFIKASI ===================== -->
     <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] hidden bg-cosmic-text text-white font-bold text-sm px-4 py-2 rounded-full shadow-lg text-center max-w-[90%]" role="status" aria-live="polite"></div>
 
@@ -547,38 +737,69 @@ $kuis = [
                 'Semangat, Kapten! Satu langkah lagi! 🚀'
             ];
 
+            var JUDUL_BELI = [
+                'Yeay, berhasil! 🎉',
+                'Keren sekali, Kapten! 🌟',
+                'Hore, item baru! 🚀'
+            ];
+
             var TIPS = [
                 'Klik kartu planet yang terbuka untuk memulai kuis, ya Kapten! 🚀',
                 'Setiap jawaban benar memberimu Koin Bintang. Yuk kumpulkan sebanyak-banyaknya! ⭐',
                 'Kalau jawabanmu belum tepat, jangan sedih. Aku akan memberi petunjuk! 💡',
+                'Tukarkan Koin Bintangmu di Toko Bintang untuk mendapatkan item keren! 🛍️',
                 'Planet Seni & Coding terbuka di Level 5. Semangat naik level! 🔒'
             ];
 
-            // ---------- Elemen DOM ----------
+            // ---------- Kelas Tailwind untuk status item toko ----------
+            var KELAS_KARTU_BELI   = 'item-toko flex flex-col text-center bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-3 transition-colors duration-200';
+            var KELAS_STATUS_BELI  = 'item-status mt-1 text-xs font-extrabold text-emerald-700';
+            var KELAS_TOMBOL_BELI  = 'btn-beli w-full bg-emerald-200 text-emerald-800 font-extrabold text-sm py-2 rounded-full cursor-default';
+
+            // ---------- Elemen DOM umum ----------
             var coinEl     = document.getElementById('star-coin-count');
             var coinBadge  = document.getElementById('star-coin-badge');
             var toastEl    = document.getElementById('toast');
             var gridEl     = document.getElementById('grid-planet');
 
+            // ---------- Elemen modal kuis ----------
             var modal      = document.getElementById('kuis-modal');
-            var panel      = document.getElementById('kuis-panel');
             var ikonEl     = document.getElementById('kuis-ikon');
             var judulEl    = document.getElementById('kuis-judul');
             var hadiahEl   = document.getElementById('kuis-hadiah');
             var tanyaEl    = document.getElementById('kuis-pertanyaan');
             var pilihanEl  = document.getElementById('kuis-pilihan');
             var fbEl       = document.getElementById('kuis-feedback');
-            var modalAraz  = document.getElementById('arazka-modal');
-            var percikEl   = document.getElementById('kuis-percik');
-            var bubbleEl   = document.getElementById('kuis-bubble');
-            var fbJudulEl  = document.getElementById('kuis-fb-judul');
-            var fbTeksEl   = document.getElementById('kuis-fb-teks');
             var lanjutBtn  = document.getElementById('kuis-lanjut');
             var tutupBtn   = document.getElementById('kuis-tutup');
 
+            // ---------- Elemen modal toko ----------
+            var tokoModal  = document.getElementById('toko-modal');
+            var tokoGrid   = document.getElementById('toko-grid');
+            var tokoSaldo  = document.getElementById('toko-saldo');
+            var tokoTutup  = document.getElementById('toko-tutup');
+            var tokoBtn    = document.getElementById('btn-toko-bintang');
+
+            // ---------- Elemen widget Arazka ----------
             var wBtn       = document.getElementById('arazka-btn');
             var wBubble    = document.getElementById('arazka-bubble');
             var wTeks      = document.getElementById('arazka-teks');
+
+            // ---------- Kumpulan elemen Arazka di tiap modal ----------
+            var araKuis = {
+                avatar: document.getElementById('arazka-modal'),
+                percik: document.getElementById('kuis-percik'),
+                bubble: document.getElementById('kuis-bubble'),
+                judul:  document.getElementById('kuis-fb-judul'),
+                teks:   document.getElementById('kuis-fb-teks')
+            };
+            var araToko = {
+                avatar: document.getElementById('arazka-toko'),
+                percik: document.getElementById('toko-percik'),
+                bubble: document.getElementById('toko-bubble'),
+                judul:  document.getElementById('toko-fb-judul'),
+                teks:   document.getElementById('toko-fb-teks')
+            };
 
             // ---------- State ----------
             var koinTotal  = parseInt(coinEl.textContent, 10) || 0; // nilai sebenarnya
@@ -588,11 +809,14 @@ $kuis = [
             var timerWidget = null;
             var indeksTips = 0;
             var selesai    = {};   // planet yang hadiahnya sudah diambil
+            var dimiliki   = {};   // item toko yang sudah dibeli
+            var modalAktif = null; // modal yang sedang terbuka
             var planetAktif = null;
             var soalAktif   = null;
             var sudahBenar  = false;
             var jumlahSalah = 0;
             var dapatKoinBaru = false;
+            var belanjaBaru = false;
             var fokusSebelum = null;
 
             // ---------- Util: ganti ekspresi Arazka (sekaligus memulai ulang animasi) ----------
@@ -603,10 +827,32 @@ $kuis = [
             }
 
             // ---------- Sistem Star Coins ----------
+            function tampilSaldoToko() {
+                tokoSaldo.textContent = koinTotal;
+            }
+
             function denyutKoin() {
                 coinBadge.classList.remove('coin-pop');
                 void coinBadge.offsetWidth;
                 coinBadge.classList.add('coin-pop');
+            }
+
+            // Animasi hitung naik/turun menuju koinTotal
+            function animasiKoin() {
+                clearInterval(timerKoin);
+                if (koinTampil === koinTotal) { return; }
+                var langkah = Math.max(1, Math.ceil(Math.abs(koinTotal - koinTampil) / 15));
+                timerKoin = setInterval(function () {
+                    var sisa  = koinTotal - koinTampil;
+                    var arah  = sisa > 0 ? 1 : -1;
+                    var gerak = Math.min(Math.abs(sisa), langkah);
+                    koinTampil += arah * gerak;
+                    coinEl.textContent = koinTampil;
+                    if (koinTampil === koinTotal) {
+                        clearInterval(timerKoin);
+                        denyutKoin();
+                    }
+                }, 40);
             }
 
             window.setStarCoins = function (nilai) {
@@ -614,6 +860,7 @@ $kuis = [
                 koinTotal = Math.max(0, parseInt(nilai, 10) || 0);
                 koinTampil = koinTotal;
                 coinEl.textContent = koinTotal;
+                tampilSaldoToko();
                 denyutKoin();
             };
 
@@ -621,21 +868,18 @@ $kuis = [
                 return koinTotal;
             };
 
-            // Menambah koin dengan efek hitung naik yang halus
+            // Menambah (positif) atau mengurangi (negatif) koin secara dinamis
+            window.ubahStarCoins = function (selisih) {
+                selisih = parseInt(selisih, 10) || 0;
+                if (selisih === 0) { return; }
+                koinTotal = Math.max(0, koinTotal + selisih);
+                tampilSaldoToko();
+                animasiKoin();
+            };
+
             window.tambahStarCoins = function (jumlah) {
                 jumlah = parseInt(jumlah, 10) || 0;
-                if (jumlah <= 0) { return; }
-                koinTotal += jumlah;
-                clearInterval(timerKoin);
-                var langkah = Math.max(1, Math.ceil((koinTotal - koinTampil) / 15));
-                timerKoin = setInterval(function () {
-                    koinTampil = Math.min(koinTotal, koinTampil + langkah);
-                    coinEl.textContent = koinTampil;
-                    if (koinTampil >= koinTotal) {
-                        clearInterval(timerKoin);
-                        denyutKoin();
-                    }
-                }, 40);
+                if (jumlah > 0) { window.ubahStarCoins(jumlah); }
             };
 
             // ---------- Toast ----------
@@ -647,6 +891,22 @@ $kuis = [
                     toastEl.classList.add('hidden');
                 }, durasi || 2400);
             };
+
+            // ---------- Modal umum ----------
+            function tampilkanModal(root) {
+                modalAktif = root;
+                root.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+
+            function sembunyikanModal(root) {
+                root.classList.add('hidden');
+                if (modalAktif === root) { modalAktif = null; }
+                document.body.classList.remove('overflow-hidden');
+                if (fokusSebelum && typeof fokusSebelum.focus === 'function') {
+                    fokusSebelum.focus();
+                }
+            }
 
             // ---------- Widget Arazka (mengambang) ----------
             function arazkaDiam() {
@@ -675,35 +935,37 @@ $kuis = [
                 return tip;
             }
 
-            // ---------- Arazka di dalam Modal ----------
-            function percikBintang() {
+            // ---------- Arazka di dalam modal (kuis & toko) ----------
+            function percikBintang(wadah) {
                 var arah = [[-40, -30], [40, -30], [-46, 2], [46, 2], [-30, 34], [30, 34], [0, -44], [0, 42]];
-                percikEl.innerHTML = '';
+                wadah.innerHTML = '';
                 arah.forEach(function (a) {
                     var s = document.createElement('span');
                     s.className = 'percik';
                     s.style.setProperty('--dx', a[0] + 'px');
                     s.style.setProperty('--dy', a[1] + 'px');
                     s.innerHTML = IKON_BINTANG_KECIL;
-                    percikEl.appendChild(s);
+                    wadah.appendChild(s);
                 });
             }
 
-            function bicaraModal(mood, tema, judul, teks, meriah) {
+            function bicara(ara, mood, tema, judul, teks, meriah) {
                 var warna = {
                     netral:   'bg-violet-50 border-violet-200 text-cosmic-text',
                     sukses:   'bg-emerald-50 border-emerald-300 text-emerald-900',
                     semangat: 'bg-amber-50 border-amber-300 text-amber-900'
                 };
-                bubbleEl.className = 'relative flex-1 rounded-2xl border-2 p-3 ' + warna[tema];
-                fbJudulEl.textContent = judul;
-                fbTeksEl.textContent = teks;
-                setMood(modalAraz, mood);
-                percikEl.innerHTML = '';
-                if (meriah) { percikBintang(); }
+                ara.bubble.className = 'relative flex-1 rounded-2xl border-2 p-3 ' + warna[tema];
+                ara.judul.textContent = judul;
+                ara.teks.textContent = teks;
+                setMood(ara.avatar, mood);
+                ara.percik.innerHTML = '';
+                if (meriah) { percikBintang(ara.percik); }
             }
 
-            // ---------- Membuka & menutup modal ----------
+            // ============================================================
+            //  KUIS
+            // ============================================================
             function bukaKuis(kartu) {
                 var id   = kartu.getAttribute('data-planet-id');
                 var soal = DATA_KUIS[id];
@@ -755,13 +1017,12 @@ $kuis = [
                 lanjutBtn.classList.add('hidden');
 
                 // Arazka menyapa di awal kuis
-                bicaraModal('halo', 'netral',
+                bicara(araKuis, 'halo', 'netral',
                     'Siap, Kapten? 🚀',
                     'Baca soalnya pelan-pelan, lalu pilih jawaban A, B, atau C. Aku di sini untuk membantumu!',
                     false);
 
-                modal.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
+                tampilkanModal(modal);
 
                 var pertama = pilihanEl.querySelector('button');
                 if (pertama) { pertama.focus(); }
@@ -769,17 +1030,13 @@ $kuis = [
 
             function tutupKuis() {
                 if (modal.classList.contains('hidden')) { return; }
-                modal.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
-                if (fokusSebelum && typeof fokusSebelum.focus === 'function') {
-                    fokusSebelum.focus();
-                }
+                sembunyikanModal(modal);
 
                 // Arazka merespons setelah modal ditutup
                 var totalTerbuka = gridEl.querySelectorAll('.planet-card.is-open').length;
                 if (sudahBenar && dapatKoinBaru) {
                     if (Object.keys(selesai).length >= totalTerbuka) {
-                        arazkaBicara('Luar biasa, Kapten! Semua planet terbuka sudah kamu selesaikan. Koinmu sekarang ' + koinTotal + ' ⭐', 'selebrasi', 9000);
+                        arazkaBicara('Luar biasa, Kapten! Semua planet terbuka sudah kamu selesaikan. Koinmu sekarang ' + koinTotal + ' ⭐ Yuk belanja di Toko Bintang!', 'selebrasi', 9000);
                     } else {
                         arazkaBicara('Mantap, Kapten! Koinmu sekarang ' + koinTotal + ' ⭐ Yuk pilih planet berikutnya!', 'selebrasi', 8000);
                     }
@@ -790,7 +1047,6 @@ $kuis = [
                 }
             }
 
-            // ---------- Logika menjawab ----------
             function tandaiKartuSelesai(id) {
                 var kartu = gridEl.querySelector('[data-planet-id="' + id + '"]');
                 if (!kartu) { return; }
@@ -823,18 +1079,18 @@ $kuis = [
                         tandaiKartuSelesai(planetAktif.id);
 
                         if (jumlahSalah === 0) {
-                            bicaraModal('selebrasi', 'sukses',
+                            bicara(araKuis, 'selebrasi', 'sukses',
                                 'Hebat sekali, Kapten! 🌟',
                                 'Kamu dapat +' + planetAktif.poin + ' Koin Bintang! Langsung benar, sempurna! ' + soalAktif.penjelasan,
                                 true);
                         } else {
-                            bicaraModal('selebrasi', 'sukses',
+                            bicara(araKuis, 'selebrasi', 'sukses',
                                 'Kamu pantang menyerah, keren! 🎉',
                                 'Berkat usahamu, kamu dapat +' + planetAktif.poin + ' Koin Bintang! ' + soalAktif.penjelasan,
                                 true);
                         }
                     } else {
-                        bicaraModal('selebrasi', 'sukses',
+                        bicara(araKuis, 'selebrasi', 'sukses',
                             'Benar lagi, keren! 🌟',
                             soalAktif.penjelasan + ' Koin misi ini sudah kamu dapatkan, yuk coba planet lainnya!',
                             true);
@@ -855,7 +1111,7 @@ $kuis = [
                     var tambahan = (sisa === 1) ? ' Tinggal satu pilihan lagi, ayo semangat!' : '';
                     var pembuka = PEMBUKA_SALAH[(jumlahSalah - 1) % PEMBUKA_SALAH.length];
 
-                    bicaraModal('semangat', 'semangat', pembuka, petunjuk + tambahan, false);
+                    bicara(araKuis, 'semangat', 'semangat', pembuka, petunjuk + tambahan, false);
                     fbEl.scrollIntoView({ block: 'nearest' });
 
                     var berikut = pilihanEl.querySelector('.opsi-jawaban:not([disabled])');
@@ -863,7 +1119,125 @@ $kuis = [
                 }
             }
 
-            // ---------- Event listener ----------
+            // ============================================================
+            //  TOKO BINTANG
+            // ============================================================
+            function semuaItem() {
+                return tokoGrid.querySelectorAll('.item-toko');
+            }
+
+            // Harga item termurah yang belum dimiliki (null jika semua sudah dimiliki)
+            function hargaTermurah() {
+                var min = null;
+                Array.prototype.forEach.call(semuaItem(), function (kartu) {
+                    if (dimiliki[kartu.getAttribute('data-item-id')]) { return; }
+                    var harga = parseInt(kartu.getAttribute('data-harga'), 10) || 0;
+                    if (min === null || harga < min) { min = harga; }
+                });
+                return min;
+            }
+
+            function bukaToko() {
+                arazkaDiam();
+                fokusSebelum = tokoBtn;
+                belanjaBaru = false;
+                tampilSaldoToko();
+
+                // Sapaan Arazka menyesuaikan jumlah koin
+                var termurah = hargaTermurah();
+                if (termurah === null) {
+                    bicara(araToko, 'selebrasi', 'sukses',
+                        'Wow, kolektor sejati! 🏆',
+                        'Semua item di Toko Bintang sudah menjadi milikmu. Keren banget, Kapten!',
+                        true);
+                } else if (koinTotal < termurah) {
+                    bicara(araToko, 'semangat', 'semangat',
+                        'Selamat datang, Kapten! 🛍️',
+                        'Koin Bintangmu belum cukup untuk membeli item apa pun. Yuk selesaikan kuis lagi untuk mengumpulkan koin!',
+                        false);
+                } else {
+                    bicara(araToko, 'halo', 'netral',
+                        'Selamat datang di Toko Bintang! 🛍️',
+                        'Pilih item favoritmu, lalu tukarkan dengan Koin Bintang. Koinmu sekarang ' + koinTotal + ' ⭐',
+                        false);
+                }
+
+                tampilkanModal(tokoModal);
+
+                var pertama = tokoGrid.querySelector('.btn-beli:not([disabled])');
+                (pertama || tokoTutup).focus();
+            }
+
+            function tutupToko() {
+                if (tokoModal.classList.contains('hidden')) { return; }
+                sembunyikanModal(tokoModal);
+
+                if (belanjaBaru) {
+                    arazkaBicara('Gaya sekali, Kapten! Sisa koinmu ' + koinTotal + ' ⭐ Kumpulkan lagi lewat kuis ya!', 'selebrasi', 8000);
+                }
+            }
+
+            function tandaiItemTerbeli(kartu) {
+                kartu.className = KELAS_KARTU_BELI;
+                var status = kartu.querySelector('.item-status');
+                status.textContent = 'Terbeli ✓';
+                status.className = KELAS_STATUS_BELI;
+                var tombol = kartu.querySelector('.btn-beli');
+                tombol.disabled = true;
+                tombol.textContent = 'Dimiliki ✓';
+                tombol.className = KELAS_TOMBOL_BELI;
+            }
+
+            // Efek nyata dari item "Warna Badge Emas": badge koin di header berubah emas
+            function pakaiBadgeEmas() {
+                coinBadge.classList.remove('bg-cosmic-accent', 'border-amber-300');
+                coinBadge.classList.add('bg-amber-200', 'border-amber-500', 'ring-2', 'ring-amber-400');
+            }
+
+            function beliItem(kartu) {
+                var id    = kartu.getAttribute('data-item-id');
+                var harga = parseInt(kartu.getAttribute('data-harga'), 10) || 0;
+                var nama  = kartu.getAttribute('data-nama');
+
+                if (dimiliki[id]) { return; }
+
+                // ----- KOIN TIDAK CUKUP -----
+                if (koinTotal < harga) {
+                    var kurang = harga - koinTotal;
+                    bicara(araToko, 'semangat', 'semangat',
+                        'Sabar ya, Kapten! 💪',
+                        'Koin Bintangmu belum cukup, yuk selesaikan kuis lagi! Kamu masih butuh ' + kurang + ' koin lagi untuk ' + nama + '.',
+                        false);
+                    return;
+                }
+
+                // ----- KOIN CUKUP: proses penukaran -----
+                window.ubahStarCoins(-harga);
+                dimiliki[id] = true;
+                belanjaBaru = true;
+                tandaiItemTerbeli(kartu);
+                if (id === 'badge-emas') { pakaiBadgeEmas(); }
+
+                var jumlahMilik = Object.keys(dimiliki).length;
+                var judul = JUDUL_BELI[(jumlahMilik - 1) % JUDUL_BELI.length];
+                var teks  = nama + ' sekarang jadi milikmu! Sisa Koin Bintangmu ' + koinTotal + ' ⭐';
+
+                var termurah = hargaTermurah();
+                if (termurah === null) {
+                    teks += ' Wah, semua item sudah kamu miliki. Kamu kolektor luar angkasa sejati! 🏆';
+                } else if (koinTotal < termurah) {
+                    teks += ' Selesaikan kuis lagi untuk mengumpulkan koin dan membeli item berikutnya!';
+                }
+
+                bicara(araToko, 'selebrasi', 'sukses', judul, teks, true);
+
+                var berikut = tokoGrid.querySelector('.btn-beli:not([disabled])');
+                (berikut || tokoTutup).focus();
+            }
+
+            // ============================================================
+            //  EVENT LISTENER
+            // ============================================================
             // Klik kartu planet (event delegation: 1 listener untuk semua kartu)
             gridEl.addEventListener('click', function (event) {
                 var kartu = event.target.closest('.planet-card');
@@ -883,12 +1257,24 @@ $kuis = [
                 if (tombol && !tombol.disabled) { pilihJawaban(tombol); }
             });
 
+            // Klik tombol Beli di toko (event delegation)
+            tokoGrid.addEventListener('click', function (event) {
+                var tombol = event.target.closest('.btn-beli');
+                if (!tombol || tombol.disabled) { return; }
+                beliItem(tombol.closest('.item-toko'));
+            });
+
+            tokoBtn.addEventListener('click', bukaToko);
             tutupBtn.addEventListener('click', tutupKuis);
             lanjutBtn.addEventListener('click', tutupKuis);
+            tokoTutup.addEventListener('click', tutupToko);
 
             // Klik area gelap di luar panel menutup modal
             modal.addEventListener('click', function (event) {
                 if (event.target === modal) { tutupKuis(); }
+            });
+            tokoModal.addEventListener('click', function (event) {
+                if (event.target === tokoModal) { tutupToko(); }
             });
 
             // Klik Arazka: tampilkan / sembunyikan balon bicara
@@ -900,18 +1286,19 @@ $kuis = [
                 }
             });
 
-            // Keyboard: Esc menutup modal, Tab dikunci di dalam modal
+            // Keyboard: Esc menutup modal, Tab dikunci di dalam modal yang aktif
             document.addEventListener('keydown', function (event) {
-                if (modal.classList.contains('hidden')) { return; }
+                if (!modalAktif) { return; }
 
                 if (event.key === 'Escape') {
-                    tutupKuis();
+                    if (modalAktif === modal) { tutupKuis(); } else { tutupToko(); }
                     return;
                 }
                 if (event.key !== 'Tab') { return; }
 
+                var panelAktif = modalAktif.querySelector('.modal-panel');
                 var daftar = Array.prototype.filter.call(
-                    panel.querySelectorAll('button:not([disabled])'),
+                    panelAktif.querySelectorAll('button:not([disabled])'),
                     function (el) { return el.offsetParent !== null; }
                 );
                 if (daftar.length === 0) { return; }
@@ -919,7 +1306,7 @@ $kuis = [
                 var pertama = daftar[0];
                 var terakhir = daftar[daftar.length - 1];
 
-                if (!panel.contains(document.activeElement)) {
+                if (!panelAktif.contains(document.activeElement)) {
                     event.preventDefault();
                     pertama.focus();
                 } else if (event.shiftKey && document.activeElement === pertama) {
@@ -931,14 +1318,9 @@ $kuis = [
                 }
             });
 
-            // Tombol Toko Bintang
-            document.getElementById('btn-toko-bintang').addEventListener('click', function () {
-                window.showToast('Toko Bintang segera dibuka! Kumpulkan Star Coins dulu ya!');
-            });
-
             // Arazka menyapa saat halaman selesai dimuat
             setTimeout(function () {
-                if (modal.classList.contains('hidden')) {
+                if (!modalAktif) {
                     arazkaBicara('Halo, Kapten! Aku Arazka, mentor luar angkasamu. Pilih satu planet dan mulai petualanganmu! 🚀', 'halo', 9000);
                 }
             }, 1200);
