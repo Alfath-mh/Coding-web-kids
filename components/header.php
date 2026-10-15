@@ -5,18 +5,13 @@ $namaUser = $user ? $user['nama'] : 'Kapten';
 $koinUser = $user ? (int) $user['star_coins'] : 0;
 $levelUser = $user ? (int) $user['level'] : 1;
 ?>
-<header class="sticky top-0 z-50 bg-cosmic-card border-b-4 border-cosmic-accent shadow-md">
+<header class="sticky top-0 z-40 bg-cosmic-card border-b-4 border-cosmic-accent shadow-md">
     <nav class="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
-
-        <!-- KIRI: beri ruang untuk tombol hamburger yang fixed -->
-        <div class="flex items-center gap-3 ml-12">
-            <a href="index.php" class="flex items-center gap-2">
-                <span class="hidden sm:inline text-lg font-black">BRIGHT <span class="text-violet-600">SPACE</span></span>
-            </a>
+        <div class="flex items-center gap-3 ml-14">
+            <a href="index.php" class="hidden sm:inline text-lg font-black">BRIGHT <span class="text-violet-600">SPACE</span></a>
             <a href="index.php" class="hidden md:inline-flex items-center gap-1 text-sm font-extrabold px-3 py-1.5 rounded-full hover:bg-white/60">🗺️ Peta Planet</a>
         </div>
 
-        <!-- KANAN: Koin + Toko + Profil -->
         <div class="flex items-center gap-2">
             <div id="star-coin-badge" class="flex items-center gap-1 bg-cosmic-accent border-2 border-amber-300 rounded-full pl-1.5 pr-2.5 py-1 shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5 shrink-0" aria-hidden="true">
@@ -33,7 +28,6 @@ $levelUser = $user ? (int) $user['level'] : 1;
                 <span class="hidden sm:inline">Toko</span>
             </button>
 
-            <!-- Tombol Profil + Logout -->
             <div class="relative">
                 <button type="button" id="btn-profil" aria-haspopup="true" aria-expanded="false"
                         class="flex items-center gap-2 bg-white hover:bg-violet-50 border-2 border-violet-200 rounded-full pl-1 pr-3 py-1 shadow-sm">
@@ -42,7 +36,6 @@ $levelUser = $user ? (int) $user['level'] : 1;
                     </span>
                     <span class="hidden sm:inline text-sm font-extrabold max-w-[80px] truncate"><?= htmlspecialchars($namaUser) ?></span>
                 </button>
-
                 <div id="profil-dropdown" class="hidden absolute right-0 mt-2 w-56 bg-white border-2 border-violet-200 rounded-2xl shadow-xl p-3 z-50" style="display:none;">
                     <div class="pb-2 border-b-2 border-violet-100">
                         <p class="text-xs font-extrabold uppercase text-violet-600">Kapten</p>

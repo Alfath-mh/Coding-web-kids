@@ -1,6 +1,7 @@
 <?php
 defined('BRIGHT_SPACE') or exit('Akses langsung tidak diizinkan.');
 if (!isset($items)) { $items = []; }
+$arazkaSvgShop = file_get_contents(__DIR__ . '/arazka-svg.php');
 ?>
 <div id="toko-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-cosmic-text/70" style="display:none;" role="dialog" aria-modal="true">
     <div class="modal-panel relative w-full max-w-2xl max-h-[92vh] overflow-y-auto bg-cosmic-card border-4 border-cosmic-accent rounded-3xl shadow-2xl p-5 sm:p-6">
@@ -27,7 +28,7 @@ if (!isset($items)) { $items = []; }
 
         <div id="toko-feedback" class="mt-5 flex items-start gap-3">
             <div id="arazka-toko" class="arazka-wrap relative w-14 h-14 shrink-0">
-                <?= $arazkaSvg ?? '' ?>
+                <?= $arazkaSvgShop ?>
                 <div id="toko-percik" class="absolute inset-0 pointer-events-none"></div>
             </div>
             <div id="toko-bubble" class="relative flex-1 rounded-2xl border-2 p-3 bg-violet-50 border-violet-200">

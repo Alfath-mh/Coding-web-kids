@@ -5,7 +5,7 @@ require __DIR__ . '/config/database.php';
 require_login();
 
 $appName   = 'BRIGHT SPACE';
-$pageTitle = 'BRIGHT SPACE - Petualangan Belajar';
+$pageTitle = 'BRIGHT SPACE - Peta Petualangan';
 $user      = current_user();
 
 function e($t) { return htmlspecialchars((string) $t, ENT_QUOTES, 'UTF-8'); }
@@ -13,8 +13,6 @@ function e($t) { return htmlspecialchars((string) $t, ENT_QUOTES, 'UTF-8'); }
 require __DIR__ . '/config/planets.php';
 
 $arazkaSvg = file_get_contents(__DIR__ . '/components/arazka-svg.php');
-
-// Terapkan outfit Arazka dari DB
 $topiUser     = $user['avatar_topi'] ?? null;
 $kacamataUser = $user['avatar_kacamata'] ?? null;
 ?>
@@ -54,13 +52,15 @@ $kacamataUser = $user['avatar_kacamata'] ?? null;
 </head>
 <body class="font-nunito bg-cosmic-bg text-cosmic-text min-h-screen flex flex-col antialiased">
 
-<?php include __DIR__ . '/components/sidebar.php'; ?>
- <?php include __DIR__ . '/components/header.php'; ?>
+    <?php include __DIR__ . '/components/sidebar.php'; ?>
+    <?php include __DIR__ . '/components/header.php'; ?>
 
     <main class="max-w-6xl mx-auto px-4 py-8 w-full flex-grow">
-        <section class="mb-8 text-center">
-            <h1 class="text-3xl sm:text-4xl font-black">Halo, Kapten <?= e($user['nama']) ?>! 👋</h1>
-            <p class="mt-2 text-base sm:text-lg font-bold opacity-80">Pilih planet petualanganmu hari ini! 🚀</p>
+        <?php include __DIR__ . '/components/arazka-chat.php'; ?>
+
+        <section id="judul-planet-section" class="mb-8 text-center">
+            <h1 class="text-3xl sm:text-4xl font-black">Peta Petualangan 🗺️</h1>
+            <p class="mt-2 text-base sm:text-lg font-bold opacity-80">Pilih planet untuk memulai misi!</p>
         </section>
 
         <section id="grid-planet" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -97,28 +97,13 @@ $kacamataUser = $user['avatar_kacamata'] ?? null;
         </section>
     </main>
 
-    <!-- Widget Arazka -->
-    <aside id="arazka-widget" class="fixed bottom-4 right-4 z-40 flex items-end gap-2">
-        <div id="arazka-bubble" class="hidden relative max-w-[14rem] sm:max-w-xs bg-white border-2 border-violet-300 rounded-2xl px-3 py-2 shadow-lg" style="display:none;">
-            <p class="text-xs font-extrabold text-violet-600">Arazka</p>
-            <p id="arazka-teks" class="text-sm font-bold leading-snug"></p>
-            <span class="absolute -right-1.5 bottom-5 w-3 h-3 rotate-45 bg-white border-t-2 border-r-2 border-violet-300"></span>
-        </div>
-        <button type="button" id="arazka-btn" aria-expanded="false"
-                class="arazka-wrap w-16 h-16 sm:w-20 sm:h-20 shrink-0 p-1 rounded-full bg-cosmic-card border-4 border-cosmic-accent shadow-lg hover:scale-110 active:scale-95 transition-transform"
-                data-topi="<?= e($topiUser ?? '') ?>"
-                data-kacamata="<?= e($kacamataUser ?? '') ?>">
-            <?= $arazkaSvg ?>
-        </button>
-    </aside>
-
     <?php include __DIR__ . '/components/modal-shop.php'; ?>
 
-    <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] hidden bg-cosmic-text text-white font-bold text-sm px-4 py-2 rounded-full shadow-lg text-center max-w-[90%]" role="status" aria-live="polite"></div>
+    <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] hidden bg-cosmic-text text-white font-bold text-sm px-4 py-2 rounded-full shadow-lg text-center max-w-[90%]" style="display:none;"></div>
 
     <footer class="bg-cosmic-card border-t-4 border-cosmic-accent">
         <div class="max-w-6xl mx-auto px-4 pt-4 pb-24 md:pb-4 text-center text-xs sm:text-sm font-bold">
-            Optimized for Low-Spec School Hardware | BRIGHT SPACE EdTech
+            BRIGHT SPACE EdTech
         </div>
     </footer>
 
@@ -131,9 +116,6 @@ $kacamataUser = $user['avatar_kacamata'] ?? null;
                 topi: <?= json_encode($topiUser, JSON_UNESCAPED_UNICODE) ?>,
                 kacamata: <?= json_encode($kacamataUser, JSON_UNESCAPED_UNICODE) ?>
             },
-            planetId: null,
-            kuis: [],
-            latihan: [],
             gameModes: <?= json_encode($gameModes, JSON_UNESCAPED_UNICODE) ?>
         };
     </script>

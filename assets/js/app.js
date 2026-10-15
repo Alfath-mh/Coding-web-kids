@@ -1,6 +1,5 @@
 /* ============================================================
  * BRIGHT SPACE - assets/js/app.js
- * Full rewrite: sesi 10-15 soal + timer + result Arazka + outfit.
  * ============================================================ */
 (function () {
     'use strict';
@@ -19,20 +18,9 @@
         'Klik kartu planet untuk mulai petualangan! 🚀',
         'Misi wajib memberi koin besar, Side Quest untuk seru-seruan! 🎯',
         'Jawab semua benar = Bonus Sempurna +20%! 🏆',
-        'Timer habis = sesi selesai. Kerjakan dengan tenang ya! ⏱️',
+        'Timer habis = sesi selesai! ⏱️',
         'Tukar koinmu di Toko Bintang! 🛍️'
     ];
-
-    // ============ DOM ============
-    var coinEl = document.getElementById('star-coin-count');
-    var coinBadge = document.getElementById('star-coin-badge');
-    var toastEl = document.getElementById('toast');
-
-    var modal, tahapSoal, tahapHasil, ikonEl, judulEl, timerBox, timerEl, progTeksEl, progBenarEl, progBarEl, tanyaEl, pilihanEl, lanjutBtn, tutupBtn;
-    var hasilBenarEl, hasilTotalEl, hasilAkurasiEl, hasilBarEl, hasilRewardEl, hasilBonusEl, hasilKomentar, hasilSelesai, hasilUlang, hasilPercik, araHasil;
-    var tokoModal, tokoGrid, tokoSaldo, tokoTutup, tokoBtn;
-    var wBtn, wBubble, wTeks;
-    var araKuis, araToko;
 
     // ============ STATE ============
     var koinTotal = parseInt(USER.star_coins, 10) || 0;
@@ -49,6 +37,15 @@
     var sudahBangunToko = false;
     var sesi = null;
 
+    var coinEl, coinBadge, toastEl;
+    var modal, tahapSoal, tahapHasil, ikonEl, judulEl, timerBox, timerEl,
+        progTeksEl, progBenarEl, progBarEl, tanyaEl, pilihanEl, lanjutBtn, tutupBtn;
+    var hasilBenarEl, hasilTotalEl, hasilAkurasiEl, hasilBarEl, hasilRewardEl,
+        hasilBonusEl, hasilKomentar, hasilSelesai, hasilUlang, hasilPercik, araHasil;
+    var tokoModal, tokoGrid, tokoSaldo, tokoTutup, tokoBtn;
+    var wBtn, wBubble, wTeks;
+    var araKuis, araToko;
+
     function setMood(el, mood) {
         if (!el) return;
         el.removeAttribute('data-mood');
@@ -56,7 +53,7 @@
         if (mood) el.setAttribute('data-mood', mood);
     }
 
-    // ============ STAR COINS ============
+    // ============ KOIN ============
     function tampilSaldoToko() { if (tokoSaldo) tokoSaldo.textContent = koinTotal; }
     function denyutKoin() { if (!coinBadge) return; coinBadge.classList.remove('coin-pop'); void coinBadge.offsetWidth; coinBadge.classList.add('coin-pop'); }
     function animasiKoin() {
@@ -71,18 +68,15 @@
             if (koinTampil === koinTotal) { clearInterval(timerKoin); denyutKoin(); }
         }, 40);
     }
-       function ubahKoin(selisih) {
-       selisih = parseInt(selisih, 10) || 0;
-       if (!selisih) return;
-       koinTotal = Math.max(0, koinTotal + selisih);
-       tampilSaldoToko();
-       var sk = document.getElementById('sidebar-koin');
-       if (sk) sk.textContent = koinTotal;
-       animasiKoin();
-       var sk = document.getElementById('sidebar-koin');
-if (sk) sk.textContent = koinTotal;
-   }
-
+    function ubahKoin(selisih) {
+        selisih = parseInt(selisih, 10) || 0;
+        if (!selisih) return;
+        koinTotal = Math.max(0, koinTotal + selisih);
+        tampilSaldoToko();
+        var sk = document.getElementById('sidebar-koin');
+        if (sk) sk.textContent = koinTotal;
+        animasiKoin();
+    }
     window.showToast = function (pesan, durasi) {
         if (!toastEl) return;
         toastEl.textContent = pesan;
@@ -100,20 +94,18 @@ if (sk) sk.textContent = koinTotal;
         if (!root) return;
         modalAktif = root;
         root.classList.remove('hidden');
-        root.removeAttribute('hidden');
         root.style.display = '';
         document.body.classList.add('overflow-hidden');
     }
     function sembunyikanModal(root) {
         if (!root) return;
         root.classList.add('hidden');
-        root.setAttribute('hidden', '');
         root.style.display = 'none';
         if (modalAktif === root) modalAktif = null;
         document.body.classList.remove('overflow-hidden');
     }
 
-    // ============ ARAZKA ============
+    // ============ ARAZKA WIDGET ============
     function arazkaBicara(teks, mood, durasi) {
         if (!wBubble) return;
         wTeks.textContent = teks;
@@ -156,6 +148,119 @@ if (sk) sk.textContent = koinTotal;
         }
     }
 
+    // ============ CHAT ARAZKA ============
+    function initArazkaChat() {
+        var chatBox = document.getElementById('arazka-chat');
+        if (!chatBox) return;
+
+        var teksEl    = document.getElementById('chat-teks');
+        var subEl     = document.getElementById('chat-subteks');
+        var pilihanEl = document.getElementById('chat-pilihan');
+        var lanjutBtn = document.getElementById('chat-lanjut');
+        var percikEl  = document.getElementById('chat-percik');
+
+        if (!teksEl || !pilihanEl || !lanjutBtn) return;
+
+        var langkah = 0;
+        var data = { umur: null, pelajaran: null };
+
+        var skenario = [
+            {
+                teks: 'Halo, Kapten ' + USER.nama + '! 👋',
+                sub: 'Aku Arazka, mentor AI-mu di BRIGHT SPACE. Senang kenalan!',
+                pilihan: null,
+                lanjut: 'Lanjut 👉'
+            },
+            {
+                teks: 'Berapa umurmu sekarang?',
+                sub: 'Pilih salah satu ya!',
+                pilihan: [
+                    { label: '🐣 6-7 tahun', value: 6 },
+                    { label: '🌟 8-9 tahun', value: 8 },
+                    { label: '🚀 10-11 tahun', value: 10 }
+                ],
+                field: 'umur'
+            },
+            {
+                teks: 'Pelajaran apa favoritmu?',
+                sub: 'Pilih yang paling kamu suka!',
+                pilihan: [
+                    { label: '🔢 Matematika', value: 'matematika' },
+                    { label: '🔬 Sains', value: 'sains' },
+                    { label: '📚 Bahasa', value: 'bahasa' }
+                ],
+                field: 'pelajaran'
+            },
+            {
+                teks: 'Siap petualangan! 🚀',
+                sub: 'Aku sudah siapkan petualanganmu. Yuk pilih planetmu!',
+                pilihan: null,
+                lanjut: '🚀 Mulai Petualangan!',
+                selesai: true
+            }
+        ];
+
+        function renderLangkah() {
+            var s = skenario[langkah];
+            if (!s) return;
+
+            teksEl.textContent = s.teks;
+            subEl.textContent = s.sub || '';
+
+            if (percikEl && langkah > 0) percikBintang(percikEl);
+
+            pilihanEl.innerHTML = '';
+            lanjutBtn.classList.add('hidden');
+            lanjutBtn.style.display = 'none';
+
+            if (s.pilihan) {
+                s.pilihan.forEach(function (opt) {
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'chat-opsi w-full sm:w-auto bg-white hover:bg-cosmic-accent border-2 border-violet-300 hover:border-amber-400 rounded-2xl px-4 py-3 font-extrabold text-sm sm:text-base transition-all hover:scale-105 active:scale-95 shadow-sm';
+                    btn.textContent = opt.label;
+                    btn.addEventListener('click', function () {
+                        data[s.field] = opt.value;
+                        var payload = {};
+                        payload[s.field === 'umur' ? 'umur' : 'pelajaran'] = opt.value;
+                        fetch('api/simpan_profil.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        }).catch(function () {});
+                        langkah++;
+                        renderLangkah();
+                    });
+                    pilihanEl.appendChild(btn);
+                });
+            } else if (s.lanjut) {
+                lanjutBtn.textContent = s.lanjut;
+                lanjutBtn.classList.remove('hidden');
+                lanjutBtn.removeAttribute('hidden');
+                lanjutBtn.style.display = 'block';
+                lanjutBtn.onclick = function () {
+                    if (s.selesai) {
+                        chatBox.style.transition = 'opacity 0.5s, transform 0.5s';
+                        chatBox.style.opacity = '0';
+                        chatBox.style.transform = 'translateY(-20px)';
+                        setTimeout(function () {
+                            chatBox.classList.add('hidden');
+                            chatBox.style.display = 'none';
+                            var grid = document.getElementById('judul-planet-section');
+                            if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            arazkaBicara('Ayo pilih planetmu, Kapten! 🚀', 'selebrasi', 6000);
+                        }, 500);
+                    } else {
+                        langkah++;
+                        renderLangkah();
+                    }
+                };
+            }
+        }
+
+        renderLangkah();
+    }
+
     // ============ TIMER ============
     function formatWaktu(detik) {
         var m = Math.floor(detik / 60);
@@ -189,8 +294,6 @@ if (sk) sk.textContent = koinTotal;
             window.showToast('Soal sedang disiapkan ya! 🚀', 3000);
             return;
         }
-
-        // Acak
         var pool = soalList.slice().sort(function () { return Math.random() - 0.5; });
         var jumlah = Math.min(modeData.jumlah_soal || 10, pool.length);
 
@@ -207,33 +310,24 @@ if (sk) sk.textContent = koinTotal;
 
         ikonEl.innerHTML = PLANET.ikon;
         judulEl.textContent = modeData.judul;
-
         tahapSoal.classList.remove('hidden');
         tahapHasil.classList.add('hidden');
         tutupBtn.style.display = '';
-
         renderSoal();
         tampilkanModal(modal);
-
-        // Timer
-        if (modeData.timer_detik > 0) {
-            mulaiTimer(modeData.timer_detik);
-        } else {
-            timerBox.classList.add('hidden');
-        }
+        if (modeData.timer_detik > 0) mulaiTimer(modeData.timer_detik);
+        else timerBox.classList.add('hidden');
     }
 
     function renderSoal() {
         if (!sesi) return;
         var soal = sesi.soalList[sesi.indeks];
         if (!soal) { tampilkanHasil(); return; }
-
         sesi.sudahDijawab = false;
 
         progTeksEl.textContent = 'Soal ' + (sesi.indeks + 1) + ' dari ' + sesi.totalSoal;
         progBenarEl.textContent = '✅ ' + sesi.benar;
         progBarEl.style.width = ((sesi.indeks) / sesi.totalSoal * 100) + '%';
-
         tanyaEl.textContent = soal.pertanyaan;
         pilihanEl.innerHTML = '';
 
@@ -242,25 +336,20 @@ if (sk) sk.textContent = koinTotal;
             btn.type = 'button';
             btn.setAttribute('data-huruf', huruf);
             btn.className = 'opsi-jawaban w-full flex items-center gap-3 text-left bg-white border-2 border-violet-200 rounded-2xl px-3 py-3 font-bold text-base hover:bg-cosmic-accent hover:border-amber-300';
-
             var bulat = document.createElement('span');
             bulat.className = 'shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-violet-500 text-white font-black';
             bulat.textContent = huruf;
-
-            var teks = document.createElement('span');
-            teks.textContent = soal.pilihan[huruf];
-
+            var t = document.createElement('span');
+            t.textContent = soal.pilihan[huruf];
             btn.appendChild(bulat);
-            btn.appendChild(teks);
+            btn.appendChild(t);
             pilihanEl.appendChild(btn);
         });
 
         lanjutBtn.classList.add('hidden');
         lanjutBtn.textContent = (sesi.indeks === sesi.totalSoal - 1) ? 'Lihat Hasil 🏁' : 'Soal Berikutnya →';
 
-        var sapaan = sesi.indeks === 0
-            ? 'Sesi dimulai! Jawab dengan teliti ya! 🚀'
-            : 'Soal ' + (sesi.indeks + 1) + ' 📝';
+        var sapaan = sesi.indeks === 0 ? 'Sesi dimulai! Jawab dengan teliti ya! 🚀' : 'Soal ' + (sesi.indeks + 1) + ' 📝';
         bicara(araKuis, 'halo', 'netral', sapaan, 'Baca pelan-pelan dan pilih yang paling tepat!', false);
     }
 
@@ -281,9 +370,7 @@ if (sk) sk.textContent = koinTotal;
                     o.className = 'opsi-jawaban w-full flex items-center gap-3 text-left bg-white/60 border-2 border-violet-100 rounded-2xl px-3 py-3 font-bold text-base opacity-60';
                 }
             });
-            bicara(araKuis, 'selebrasi', 'sukses',
-                PEMBUKA_BENAR[Math.floor(Math.random() * PEMBUKA_BENAR.length)],
-                soal.penjelasan, true);
+            bicara(araKuis, 'selebrasi', 'sukses', PEMBUKA_BENAR[Math.floor(Math.random() * PEMBUKA_BENAR.length)], soal.penjelasan, true);
             progBenarEl.textContent = '✅ ' + sesi.benar;
         } else {
             sesi.salah++;
@@ -298,22 +385,16 @@ if (sk) sk.textContent = koinTotal;
                 }
             });
             var petunjuk = (soal.umpan_salah && soal.umpan_salah[huruf]) || 'Coba baca lagi ya.';
-            bicara(araKuis, 'semangat', 'semangat',
-                PEMBUKA_SALAH[Math.floor(Math.random() * PEMBUKA_SALAH.length)],
-                petunjuk, false);
+            bicara(araKuis, 'semangat', 'semangat', PEMBUKA_SALAH[Math.floor(Math.random() * PEMBUKA_SALAH.length)], petunjuk, false);
         }
-
         lanjutBtn.classList.remove('hidden');
     }
 
     function lanjutSoal() {
         if (!sesi || !sesi.sudahDijawab) return;
         sesi.indeks++;
-        if (sesi.indeks >= sesi.totalSoal) {
-            tampilkanHasil();
-        } else {
-            renderSoal();
-        }
+        if (sesi.indeks >= sesi.totalSoal) tampilkanHasil();
+        else renderSoal();
     }
 
     function tampilkanHasil(karenaHabisWaktu) {
@@ -324,16 +405,12 @@ if (sk) sk.textContent = koinTotal;
         var benar = sesi.benar;
         var total = sesi.totalSoal;
         var akurasi = Math.round(benar / total * 100);
-
-        // Reward
         var reward = 0;
         var bonus = false;
+
         if (sesi.mode.reward > 0) {
             reward = Math.round(sesi.mode.reward * akurasi / 100);
-            if (benar === total) {
-                bonus = true;
-                reward = Math.round(reward * 1.2);
-            }
+            if (benar === total) { bonus = true; reward = Math.round(reward * 1.2); }
             ubahKoin(reward);
         }
 
@@ -353,19 +430,12 @@ if (sk) sk.textContent = koinTotal;
         }
 
         var komentar = '';
-        if (karenaHabisWaktu) {
-            komentar = 'Waktu habis! Tapi kamu sudah berusaha, Kapten! Coba lagi kapan saja! ⏰';
-        } else if (akurasi === 100) {
-            komentar = 'SEMPURNA, Kapten! 🏆 Semua jawaban benar!';
-        } else if (akurasi >= 80) {
-            komentar = 'Hebat! ' + benar + '/' + total + ' benar. Dikit lagi sempurna! 🌟';
-        } else if (akurasi >= 60) {
-            komentar = 'Bagus! ' + benar + '/' + total + ' benar. Terus semangat! 💪';
-        } else if (akurasi >= 40) {
-            komentar = 'Kerja bagus! ' + benar + '/' + total + ' benar. Ayo latihan lagi! 🌈';
-        } else {
-            komentar = 'Jangan sedih, Kapten! Setiap usaha itu hebat. Coba lagi kapan saja! 😊';
-        }
+        if (karenaHabisWaktu) komentar = 'Waktu habis! Tapi kamu sudah berusaha, Kapten! ⏰';
+        else if (akurasi === 100) komentar = 'SEMPURNA, Kapten! 🏆 Semua jawaban benar!';
+        else if (akurasi >= 80) komentar = 'Hebat! ' + benar + '/' + total + ' benar. Dikit lagi sempurna! 🌟';
+        else if (akurasi >= 60) komentar = 'Bagus! ' + benar + '/' + total + ' benar. Terus semangat! 💪';
+        else if (akurasi >= 40) komentar = 'Kerja bagus! ' + benar + '/' + total + ' benar. Ayo latihan lagi! 🌈';
+        else komentar = 'Jangan sedih, Kapten! Setiap usaha itu hebat! 😊';
         hasilKomentar.textContent = komentar;
 
         setMood(araHasil, akurasi >= 60 ? 'selebrasi' : 'semangat');
@@ -410,7 +480,7 @@ if (sk) sk.textContent = koinTotal;
         tahapHasil.classList.add('hidden');
         tutupBtn.style.display = '';
         sembunyikanModal(modal);
-        arazkaBicara('Koinmu sekarang ' + koinTotal + ' ⭐ Yuk pilih misi lain!', 'selebrasi', 6000);
+        arazkaBicara('Koinmu sekarang ' + koinTotal + ' ⭐', 'selebrasi', 6000);
     }
 
     // ============ TOKO ============
@@ -446,23 +516,17 @@ if (sk) sk.textContent = koinTotal;
         bicara(araToko, 'halo', 'netral', 'Selamat datang! 🛍️', 'Pilih item favoritmu. Koinmu ' + koinTotal + ' ⭐', false);
         tampilkanModal(tokoModal);
     }
-
-    function tutupToko() {
-        if (!tokoModal) return;
-        sembunyikanModal(tokoModal);
-    }
+    function tutupToko() { if (!tokoModal) return; sembunyikanModal(tokoModal); }
 
     function beliItem(card) {
         var id = card.getAttribute('data-item-id');
         var harga = parseInt(card.getAttribute('data-harga'), 10) || 0;
         var nama = card.getAttribute('data-nama');
-
         if (dimiliki[id]) return;
         if (koinTotal < harga) {
             bicara(araToko, 'semangat', 'semangat', 'Sabar! 💪', 'Kurang ' + (harga - koinTotal) + ' koin lagi untuk ' + nama + '.', false);
             return;
         }
-
         ubahKoin(-harga);
         dimiliki[id] = true;
         card.className = 'item-toko flex flex-col text-center bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-3';
@@ -473,16 +537,13 @@ if (sk) sk.textContent = koinTotal;
         btn.textContent = 'Dimiliki ✓';
         btn.className = 'btn-beli w-full mt-2 bg-emerald-200 text-emerald-800 font-extrabold text-sm py-2 rounded-full cursor-default';
 
-        // Simpan ke DB via AJAX sederhana
         fetch('api/beli_item.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ item_id: id })
         }).catch(function () {});
 
-        // Pakai outfit di Arazka
         pakaiOutfitItem(id);
-
         bicara(araToko, 'selebrasi', 'sukses', 'Yeay! 🎉', nama + ' jadi milikmu! Sisa koin: ' + koinTotal, true);
     }
 
@@ -494,7 +555,6 @@ if (sk) sk.textContent = koinTotal;
                 if (topiGroup) topiGroup.style.display = '';
                 var sub = w.querySelector('.arazka-topi-' + (itemId === 'topi-astronaut' ? 'astronaut' : 'mahkota'));
                 if (sub) sub.style.display = '';
-                // sembunyikan yang lain
                 var other = w.querySelector('.arazka-topi-' + (itemId === 'topi-astronaut' ? 'mahkota' : 'astronaut'));
                 if (other) other.style.display = 'none';
             });
@@ -507,14 +567,17 @@ if (sk) sk.textContent = koinTotal;
         }
     }
 
-    // Terapkan outfit awal dari DB
     function terapkanOutfitAwal() {
         if (USER.topi) pakaiOutfitItem(USER.topi);
         if (USER.kacamata) pakaiOutfitItem(USER.kacamata);
     }
 
-    // ============ INISIALISASI ============
+    // ============ INIT ============
     function init() {
+        coinEl = document.getElementById('star-coin-count');
+        coinBadge = document.getElementById('star-coin-badge');
+        toastEl = document.getElementById('toast');
+
         modal = document.getElementById('kuis-modal');
         tahapSoal = document.getElementById('kuis-tahap-soal');
         tahapHasil = document.getElementById('kuis-tahap-hasil');
@@ -568,7 +631,6 @@ if (sk) sk.textContent = koinTotal;
         };
 
         // ============ EVENT ============
-        // Widget Arazka
         if (wBtn) {
             wBtn.addEventListener('click', function () {
                 if (wBubble.classList.contains('hidden')) {
@@ -580,27 +642,30 @@ if (sk) sk.textContent = koinTotal;
             });
         }
 
-        // Kategori card (planet-detail)
         document.querySelectorAll('.kategori-card').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var kat = btn.getAttribute('data-kategori');
                 document.querySelectorAll('.mode-card').forEach(function (m) {
                     m.style.display = (m.getAttribute('data-kategori') === kat) ? '' : 'none';
                 });
-                document.getElementById('section-kategori').classList.add('hidden');
-                document.getElementById('section-game').classList.remove('hidden');
-                document.getElementById('judul-game').textContent = (kat === 'wajib' ? '⭐ Misi Wajib' : '💎 Side Quest');
+                var secKat = document.getElementById('section-kategori');
+                var secGame = document.getElementById('section-game');
+                if (secKat) secKat.classList.add('hidden');
+                if (secGame) secGame.classList.remove('hidden');
+                var jd = document.getElementById('judul-game');
+                if (jd) jd.textContent = (kat === 'wajib' ? '⭐ Misi Wajib' : '💎 Side Quest');
             });
         });
         var btnGanti = document.getElementById('btn-ganti-kategori');
         if (btnGanti) {
             btnGanti.addEventListener('click', function () {
-                document.getElementById('section-kategori').classList.remove('hidden');
-                document.getElementById('section-game').classList.add('hidden');
+                var secKat = document.getElementById('section-kategori');
+                var secGame = document.getElementById('section-game');
+                if (secKat) secKat.classList.remove('hidden');
+                if (secGame) secGame.classList.add('hidden');
             });
         }
 
-        // Tombol mulai game
         document.querySelectorAll('.btn-mode').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var card = btn.closest('.mode-card');
@@ -618,7 +683,6 @@ if (sk) sk.textContent = koinTotal;
             });
         });
 
-        // Pilihan jawaban
         if (pilihanEl) {
             pilihanEl.addEventListener('click', function (e) {
                 var btn = e.target.closest('.opsi-jawaban');
@@ -636,7 +700,6 @@ if (sk) sk.textContent = koinTotal;
             });
         }
 
-        // Toko
         if (tokoBtn) tokoBtn.addEventListener('click', bukaToko);
         if (tokoTutup) tokoTutup.addEventListener('click', tutupToko);
         if (tokoModal) {
@@ -651,7 +714,6 @@ if (sk) sk.textContent = koinTotal;
             });
         }
 
-        // Escape
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
                 if (modalAktif === modal) tutupKuis();
@@ -659,13 +721,12 @@ if (sk) sk.textContent = koinTotal;
             }
         });
 
-        // Terapkan outfit
         terapkanOutfitAwal();
+        initArazkaChat();
 
-        // Sapaan Arazka personal
         setTimeout(function () {
-            if (!modalAktif) {
-                arazkaBicara('Halo, Kapten ' + USER.nama + '! Siap bertualang hari ini? 🚀', 'halo', 9000);
+            if (!modalAktif && !document.getElementById('arazka-chat')) {
+                arazkaBicara('Halo, Kapten ' + USER.nama + '! Siap bertualang? 🚀', 'halo', 9000);
             }
         }, 1200);
     }
