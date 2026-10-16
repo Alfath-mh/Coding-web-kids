@@ -1,34 +1,53 @@
 <?php
+// ============================================================
+// config/planets.php — Data planet statis (tanpa DB)
+// ============================================================
 defined('BRIGHT_SPACE') or exit('Akses langsung tidak diizinkan.');
 
 $planets = [
     [
-        'id' => 'matematika', 'nama' => 'Planet Matematika', 'deskripsi' => 'Petualangan Angka & Logika',
-        'status' => 'Terbuka', 'level' => 0,
-        'gradien' => 'from-blue-100 to-indigo-200', 'border' => 'border-indigo-300',
-        'tombol' => 'bg-indigo-500 hover:bg-indigo-600 focus-visible:ring-indigo-300',
-        'ikon' => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><ellipse cx="32" cy="34" rx="30" ry="9" fill="none" stroke="#A5B4FC" stroke-width="3" transform="rotate(-18 32 32)"/><circle cx="32" cy="32" r="20" fill="#6366F1"/><circle cx="25" cy="24" r="5" fill="#818CF8"/><g stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" fill="none"><path d="M21 28h10M26 23v10"/><path d="M37 41h9"/><path d="M38 27l7 7M45 27l-7 7"/></g><path d="M2 34a30 9 0 0 0 60 0" fill="none" stroke="#A5B4FC" stroke-width="3" transform="rotate(-18 32 32)"/></svg>',
+        'id'        => 'matematika',
+        'nama'      => 'Planet Matematika',
+        'deskripsi' => 'Petualangan Angka & Logika',
+        'status'    => 'Terbuka',
+        'level'     => 0,
+        'gradien'   => 'from-blue-100 to-indigo-200',
+        'border'    => 'border-indigo-300',
+        'tombol'    => 'bg-indigo-500 hover:bg-indigo-600 focus-visible:ring-indigo-300',
+        'ikon'      => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><ellipse cx="32" cy="34" rx="30" ry="9" fill="none" stroke="#A5B4FC" stroke-width="3" transform="rotate(-18 32 32)"/><circle cx="32" cy="32" r="20" fill="#6366F1"/><circle cx="25" cy="24" r="5" fill="#818CF8"/><g stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" fill="none"><path d="M21 28h10M26 23v10"/><path d="M37 41h9"/><path d="M38 27l7 7M45 27l-7 7"/></g><path d="M2 34a30 9 0 0 0 60 0" fill="none" stroke="#A5B4FC" stroke-width="3" transform="rotate(-18 32 32)"/></svg>',
     ],
     [
-        'id' => 'sains', 'nama' => 'Planet Sains', 'deskripsi' => 'Eksplorasi Alam & Antariksa',
-        'status' => 'Terbuka', 'level' => 0,
-        'gradien' => 'from-emerald-100 to-green-200', 'border' => 'border-emerald-300',
-        'tombol' => 'bg-emerald-500 hover:bg-emerald-600 focus-visible:ring-emerald-300',
-        'ikon' => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><ellipse cx="32" cy="34" rx="30" ry="9" fill="none" stroke="#6EE7B7" stroke-width="3" transform="rotate(-18 32 32)"/><circle cx="32" cy="32" r="20" fill="#10B981"/><circle cx="25" cy="24" r="5" fill="#34D399"/><g fill="none" stroke="#FFFFFF" stroke-width="2"><ellipse cx="32" cy="32" rx="14" ry="5.5"/><ellipse cx="32" cy="32" rx="14" ry="5.5" transform="rotate(60 32 32)"/><ellipse cx="32" cy="32" rx="14" ry="5.5" transform="rotate(120 32 32)"/></g><circle cx="32" cy="32" r="3" fill="#FFFFFF"/><path d="M2 34a30 9 0 0 0 60 0" fill="none" stroke="#6EE7B7" stroke-width="3" transform="rotate(-18 32 32)"/></svg>',
+        'id'        => 'sains',
+        'nama'      => 'Planet Sains',
+        'deskripsi' => 'Eksplorasi Alam & Antariksa',
+        'status'    => 'Terbuka',
+        'level'     => 0,
+        'gradien'   => 'from-emerald-100 to-green-200',
+        'border'    => 'border-emerald-300',
+        'tombol'    => 'bg-emerald-500 hover:bg-emerald-600 focus-visible:ring-emerald-300',
+        'ikon'      => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><ellipse cx="32" cy="34" rx="30" ry="9" fill="none" stroke="#6EE7B7" stroke-width="3" transform="rotate(-18 32 32)"/><circle cx="32" cy="32" r="20" fill="#10B981"/><circle cx="25" cy="24" r="5" fill="#34D399"/><g fill="none" stroke="#FFFFFF" stroke-width="2"><ellipse cx="32" cy="32" rx="14" ry="5.5"/><ellipse cx="32" cy="32" rx="14" ry="5.5" transform="rotate(60 32 32)"/><ellipse cx="32" cy="32" rx="14" ry="5.5" transform="rotate(120 32 32)"/></g><circle cx="32" cy="32" r="3" fill="#FFFFFF"/><path d="M2 34a30 9 0 0 0 60 0" fill="none" stroke="#6EE7B7" stroke-width="3" transform="rotate(-18 32 32)"/></svg>',
     ],
     [
-        'id' => 'bahasa', 'nama' => 'Planet Bahasa', 'deskripsi' => 'Dunia Kata & Cerita Seru',
-        'status' => 'Terbuka', 'level' => 0,
-        'gradien' => 'from-amber-100 to-yellow-200', 'border' => 'border-amber-300',
-        'tombol' => 'bg-amber-500 hover:bg-amber-600 focus-visible:ring-amber-300',
-        'ikon' => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><ellipse cx="32" cy="34" rx="30" ry="9" fill="none" stroke="#FCD34D" stroke-width="3" transform="rotate(-18 32 32)"/><circle cx="32" cy="32" r="20" fill="#F59E0B"/><circle cx="25" cy="24" r="5" fill="#FBBF24"/><path d="M32 25c-4-3-9-3-14-2v18c5-1 10-1 14 2z" fill="#FFFFFF"/><path d="M32 25c4-3 9-3 14-2v18c-5-1-10-1-14 2z" fill="#FEF3C7"/><path d="M32 25v18" stroke="#B45309" stroke-width="2" stroke-linecap="round"/><path d="M2 34a30 9 0 0 0 60 0" fill="none" stroke="#FCD34D" stroke-width="3" transform="rotate(-18 32 32)"/></svg>',
+        'id'        => 'bahasa',
+        'nama'      => 'Planet Bahasa',
+        'deskripsi' => 'Dunia Kata & Cerita Seru',
+        'status'    => 'Terbuka',
+        'level'     => 0,
+        'gradien'   => 'from-amber-100 to-yellow-200',
+        'border'    => 'border-amber-300',
+        'tombol'    => 'bg-amber-500 hover:bg-amber-600 focus-visible:ring-amber-300',
+        'ikon'      => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><ellipse cx="32" cy="34" rx="30" ry="9" fill="none" stroke="#FCD34D" stroke-width="3" transform="rotate(-18 32 32)"/><circle cx="32" cy="32" r="20" fill="#F59E0B"/><circle cx="25" cy="24" r="5" fill="#FBBF24"/><path d="M32 25c-4-3-9-3-14-2v18c5-1 10-1 14 2z" fill="#FFFFFF"/><path d="M32 25c4-3 9-3 14-2v18c-5-1-10-1-14 2z" fill="#FEF3C7"/><path d="M32 25v18" stroke="#B45309" stroke-width="2" stroke-linecap="round"/><path d="M2 34a30 9 0 0 0 60 0" fill="none" stroke="#FCD34D" stroke-width="3" transform="rotate(-18 32 32)"/></svg>',
     ],
     [
-        'id' => 'seni-coding', 'nama' => 'Planet Seni & Coding', 'deskripsi' => 'Kreasi Gambar & Algoritma',
-        'status' => 'Terkunci', 'level' => 5,
-        'gradien' => 'from-purple-100 to-pink-200', 'border' => 'border-pink-300',
-        'tombol' => 'bg-purple-500 hover:bg-purple-600 focus-visible:ring-purple-300',
-        'ikon' => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><ellipse cx="32" cy="34" rx="30" ry="9" fill="none" stroke="#F9A8D4" stroke-width="3" transform="rotate(-18 32 32)"/><circle cx="32" cy="32" r="20" fill="#A855F7"/><circle cx="25" cy="24" r="5" fill="#C084FC"/><g fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="26,25 18,32 26,39"/><polyline points="38,25 46,32 38,39"/><line x1="34" y1="22" x2="30" y2="42"/></g><circle cx="46" cy="19" r="3" fill="#F9A8D4"/><path d="M2 34a30 9 0 0 0 60 0" fill="none" stroke="#F9A8D4" stroke-width="3" transform="rotate(-18 32 32)"/></svg>',
+        'id'        => 'seni-coding',
+        'nama'      => 'Planet Seni & Coding',
+        'deskripsi' => 'Kreasi Gambar & Algoritma',
+        'status'    => 'Terkunci',
+        'level'     => 5,
+        'gradien'   => 'from-purple-100 to-pink-200',
+        'border'    => 'border-pink-300',
+        'tombol'    => 'bg-purple-500 hover:bg-purple-600 focus-visible:ring-purple-300',
+        'ikon'      => '<svg viewBox="0 0 64 64" class="w-full h-full" aria-hidden="true"><ellipse cx="32" cy="34" rx="30" ry="9" fill="none" stroke="#F9A8D4" stroke-width="3" transform="rotate(-18 32 32)"/><circle cx="32" cy="32" r="20" fill="#A855F7"/><circle cx="25" cy="24" r="5" fill="#C084FC"/><g fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="26,25 18,32 26,39"/><polyline points="38,25 46,32 38,39"/><line x1="34" y1="22" x2="30" y2="42"/></g><circle cx="46" cy="19" r="3" fill="#F9A8D4"/><path d="M2 34a30 9 0 0 0 60 0" fill="none" stroke="#F9A8D4" stroke-width="3" transform="rotate(-18 32 32)"/></svg>',
     ],
 ];
 

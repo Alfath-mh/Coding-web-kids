@@ -1,8 +1,22 @@
 <?php
 define('BRIGHT_SPACE', true);
-if (session_status() === PHP_SESSION_NONE) session_start();
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require __DIR__ . '/config/database.php';
 require_login();
+
+$appName = 'BRIGHT SPACE';
+$user = current_user();
+if (!$user) { header('Location: logout.php'); exit; }
+
+$user_name  = $user['nama']        ?? 'Kapten';
+$user_id    = (int) ($user['id']         ?? 0);
+$star_coins = (int) ($user['star_coins'] ?? 0);
+$user_level = (int) ($user['level']      ?? 1);
+
 
 $appName = 'BRIGHT SPACE';
 $user = current_user();
