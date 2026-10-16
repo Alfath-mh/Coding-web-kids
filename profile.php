@@ -1,46 +1,95 @@
 <?php
+// ============================================================
+// profile.php — Profil Kapten (Session-based, no DB)
+// Baca koin & koleksi dari $_SESSION
+// ============================================================
 define('BRIGHT_SPACE', true);
-if (session_status() === PHP_SESSION_NONE) session_start();
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require __DIR__ . '/config/database.php';
 require_login();
 
-$appName = 'BRIGHT SPACE';
 $user = current_user();
-if (!$user) { header('Location: logout.php'); exit; }
-
-$user_name  = $user['nama']        ?? 'Kapten';
-$user_id    = (int) ($user['id']         ?? 0);
-$star_coins = (int) ($user['star_coins'] ?? 0);
-$user_level = (int) ($user['level']      ?? 1);
-
-require __DIR__ . '/config/planets.php';
-
-// Ambil item yang dimiliki user dari DB
-$itemDimiliki = [];
-try {
-    $rows = db_all('SELECT item_id FROM user_items WHERE user_id = ?', [$user_id]);
-    foreach ($rows as $r) $itemDimiliki[$r['item_id']] = true;
-} catch (Exception $e) {}
-
-$topiAktif     = $user['avatar_topi'] ?? null;
-$kacamataAktif = $user['avatar_kacamata'] ?? null;
-
-// Filter koleksi
-$koleksiSaya = [];
-foreach ($items as $item) {
-    if (isset($itemDimiliki[$item['id']])) $koleksiSaya[] = $item;
-}
-
-$totalItem = count($koleksiSaya);
 
 function e($t) { return htmlspecialchars((string) $t, ENT_QUOTES, 'UTF-8'); }
 
-// Helper: ambil emoji/ikon item by id
-function getIkonItem($items, $id) {
-    foreach ($items as $it) {
-        if ($it['id'] === $id) return $it['ikon'];
+require __DIR__ . '/config/planets.php';
+
+// ============================================================
+// INISIALISASI SESSION (kalau belum ada)
+// ============================================================
+if (!isset($_SESSION['koin'])) {
+    $_SESSION['koin'] = 120;
+}
+if (!isset($_SESSION['koleksi']) || !is_array($_SESSION['koleksi'])) {
+    $_SESSION['koleksi'] = [];
+}
+if (!isset($_SESSION['avatar_topi'])) {
+    $_SESSION['avatar_topi'] = null;
+}
+if (!isset($_SESSION['avatar_kacamata'])) {
+    $_SESSION['avatar_kacamata'] = null;
+}
+
+$koinSekarang = (int) $_SESSION['koin'];
+$koleksi      = $_SESSION['koleksi'];
+$topiAktif    = $_SESSION['avatar_topi'];
+$kacamataAktif = $_SESSION['avatar_kacamata'];
+
+// ============================================================
+// HANDLE PAKAI ITEM (POST)
+// ============================================================
+$pesanSukses = '';
+$pesanError  = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['aksi'])) {
+    $aksi   = $_POST['aksi'];
+    $itemId = trim($_POST['item_id'] ?? '');
+
+    if ($aksi === 'pakai') {
+        // Cari item di koleksi
+        $itemData = null;
+        foreach ($koleksi as $k) {
+            if (($k['id'] ?? '') === $itemId) { $itemData = $k; break; }
+        }
+
+        if ($itemData) {
+            $slot = $itemData['slot'] ?? null;
+            if ($slot === 'topi') {
+                $_SESSION['avatar_topi'] = $itemId;
+                $topiAktif = $itemId;
+                $pesanSukses = '👕 ' . $itemData['nama'] . ' berhasil dipakai!';
+            } elseif ($slot === 'kacamata') {
+                $_SESSION['avatar_kacamata'] = $itemId;
+                $kacamataAktif = $itemId;
+                $pesanSukses = '👕 ' . $itemData['nama'] . ' berhasil dipakai!';
+            } else {
+                $pesanError = 'Item ini tidak bisa dipakai.';
+            }
+        } else {
+            $pesanError = 'Item tidak ditemukan di koleksi.';
+        }
+    } elseif ($aksi === 'lepas') {
+        $slot = $_POST['slot'] ?? '';
+
+        if ($slot === 'topi') {
+            $_SESSION['avatar_topi'] = null;
+            $topiAktif = null;
+            $pesanSukses = '🚫 Topi berhasil dilepas!';
+        } elseif ($slot === 'kacamata') {
+            $_SESSION['avatar_kacamata'] = null;
+            $kacamataAktif = null;
+            $pesanSukses = '🚫 Kacamata berhasil dilepas!';
+        }
     }
-    return '';
+}
+
+// Helper: cek item sedang dipakai
+function sedangDipakai($id, $topi, $kacamata) {
+    return ($topi === $id) || ($kacamata === $id);
 }
 ?>
 <!DOCTYPE html>
@@ -48,38 +97,58 @@ function getIkonItem($items, $id) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil Kapten - <?= e($appName) ?></title>
+    <title>Profil Kapten - BRIGHT SPACE</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { theme: { extend: {
-            colors: { cosmic: { bg: '#E0F2FE', card: '#EDE9FE', accent: '#FEF3C7', text: '#1E1B4B' } },
-            fontFamily: { nunito: ['Nunito', 'ui-rounded', 'system-ui', 'sans-serif'] }
-        } } };
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cosmic: { bg: '#E0F2FE', card: '#EDE9FE', accent: '#FEF3C7', text: '#1E1B4B' }
+                    },
+                    fontFamily: { nunito: ['Nunito', 'ui-rounded', 'system-ui', 'sans-serif'] }
+                }
+            }
+        };
     </script>
     <style>
         @keyframes float-frame { 0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);} }
         @keyframes glow-ring { 0%,100%{box-shadow:0 0 0 0 rgba(139,92,246,0.4);}50%{box-shadow:0 0 0 16px rgba(139,92,246,0);} }
         @keyframes sparkle { 0%,100%{opacity:0.3;transform:scale(0.8);}50%{opacity:1;transform:scale(1.2);} }
         @keyframes bob { 0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);} }
-        @keyframes bounce-in { 0%{transform:scale(0.5);opacity:0;}60%{transform:scale(1.1);}100%{transform:scale(1);opacity:1;} }
-        @keyframes pop { 0%{transform:scale(1);}50%{transform:scale(1.1);}100%{transform:scale(1);} }
+        @keyframes slide-down { 0%{opacity:0;transform:translateY(-10px);}100%{opacity:1;transform:translateY(0);} }
         .profile-float { animation: float-frame 3s ease-in-out infinite; }
         .profile-glow  { animation: glow-ring 2.5s ease-in-out infinite; }
         .sparkle { animation: sparkle 1.5s ease-in-out infinite; }
         .astronot-bob { animation: bob 2.5s ease-in-out infinite; }
-        .bounce-in { animation: bounce-in 0.5s ease-out; }
-        .pop { animation: pop 0.4s ease-out; }
+        .slide-down { animation: slide-down 0.3s ease-out; }
     </style>
 </head>
-<body class="font-nunito text-slate-800 min-h-screen antialiased" style="background-color:#F0F7FF;">
+<body class="font-nunito bg-cosmic-bg text-cosmic-text min-h-screen flex flex-col antialiased">
 
     <?php include __DIR__ . '/components/sidebar.php'; ?>
 
     <div class="lg:ml-72 min-h-screen flex flex-col">
+
         <?php include __DIR__ . '/components/header.php'; ?>
 
         <main class="max-w-5xl mx-auto px-4 py-6 w-full flex-1">
+
+            <!-- NOTIFIKASI -->
+            <?php if ($pesanSukses): ?>
+                <div class="mb-4 slide-down flex items-center gap-3 bg-emerald-100 border-2 border-emerald-400 text-emerald-800 font-bold px-4 py-3 rounded-2xl shadow-md">
+                    <span class="text-2xl">✅</span>
+                    <span class="flex-1"><?= e($pesanSukses) ?></span>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($pesanError): ?>
+                <div class="mb-4 slide-down flex items-center gap-3 bg-rose-100 border-2 border-rose-400 text-rose-800 font-bold px-4 py-3 rounded-2xl shadow-md">
+                    <span class="text-2xl">⚠️</span>
+                    <span class="flex-1"><?= e($pesanError) ?></span>
+                </div>
+            <?php endif; ?>
 
             <!-- KARTU PROFIL + KARAKTER -->
             <section class="mb-6">
@@ -92,11 +161,10 @@ function getIkonItem($items, $id) {
 
                     <div class="relative flex flex-col sm:flex-row items-center gap-6">
 
-                        <!-- KARAKTER UTAMA -->
+                        <!-- KARAKTER ASTRONOT + LAYER ITEM -->
                         <div class="profile-float shrink-0">
                             <div class="profile-glow relative w-44 h-44 sm:w-52 sm:h-52 rounded-full bg-gradient-to-br from-amber-200 via-yellow-300 to-amber-400 border-4 border-amber-300 flex items-center justify-center shadow-2xl">
 
-                                <!-- KARAKTER ASTRONOT SVG -->
                                 <div class="astronot-bob relative w-36 h-36 sm:w-44 sm:h-44">
                                     <svg viewBox="0 0 200 200" class="w-full h-full" aria-hidden="true">
 
@@ -136,49 +204,38 @@ function getIkonItem($items, $id) {
                                         <circle cx="82" cy="82" r="2.5" fill="#FFFFFF"/>
                                         <circle cx="116" cy="82" r="2.5" fill="#FFFFFF"/>
 
-                                        <!-- Pipi -->
+                                        <!-- Pipi + senyum -->
                                         <ellipse cx="70" cy="98" rx="6" ry="4" fill="#F9A8D4" opacity="0.7"/>
                                         <ellipse cx="130" cy="98" rx="6" ry="4" fill="#F9A8D4" opacity="0.7"/>
-
-                                        <!-- Senyum -->
                                         <path d="M92 100 q8 6 16 0" fill="none" stroke="#7DD3FC" stroke-width="3" stroke-linecap="round"/>
 
-                                        <!-- Badge KAPTEN -->
                                         <text x="100" y="165" text-anchor="middle" font-family="Nunito, sans-serif" font-size="9" font-weight="900" fill="#7C3AED">KAPTEN</text>
 
-                                        <!-- ======================= -->
-                                        <!-- LAYER KACAMATA (di atas mata) -->
-                                        <!-- ======================= -->
+                                        <!-- LAYER KACAMATA -->
                                         <?php if ($kacamataAktif): ?>
-                                            <g class="bounce-in">
-                                                <!-- Bingkai kacamata -->
+                                            <g>
                                                 <rect x="66" y="76" width="28" height="20" rx="8" fill="#FDE68A" stroke="#1E1B4B" stroke-width="2.5" opacity="0.95"/>
                                                 <rect x="106" y="76" width="28" height="20" rx="8" fill="#FDE68A" stroke="#1E1B4B" stroke-width="2.5" opacity="0.95"/>
                                                 <line x1="94" y1="84" x2="106" y2="84" stroke="#1E1B4B" stroke-width="2.5" stroke-linecap="round"/>
-                                                <!-- Bintang kecil di lensa -->
                                                 <polygon points="80,80 81,83 84,83.2 81.5,85 82.3,88 80,86.5 77.7,88 78.5,85 76,83.2 79,83" fill="#F59E0B"/>
                                                 <polygon points="120,80 121,83 124,83.2 121.5,85 122.3,88 120,86.5 117.7,88 118.5,85 116,83.2 119,83" fill="#F59E0B"/>
                                             </g>
                                         <?php endif; ?>
 
-                                        <!-- ======================= -->
-                                        <!-- LAYER TOPI (di atas helm) -->
-                                        <!-- ======================= -->
-                                        <?php if ($topiAktif): ?>
-                                            <g class="bounce-in">
-                                                <?php if ($topiAktif === 'topi-astronaut'): ?>
-                                                    <!-- Topi Astronaut Pastel -->
-                                                    <path d="M55 42 a45 30 0 0 1 90 0 z" fill="#C4B5FD" stroke="#1E1B4B" stroke-width="3" stroke-linejoin="round"/>
-                                                    <path d="M68 40 a32 20 0 0 1 64 0 z" fill="#7DD3FC" stroke="#1E1B4B" stroke-width="2" stroke-linejoin="round"/>
-                                                    <rect x="48" y="40" width="104" height="12" rx="6" fill="#F9A8D4" stroke="#1E1B4B" stroke-width="3"/>
-                                                <?php elseif ($topiAktif === 'mahkota-galaksi'): ?>
-                                                    <!-- Mahkota -->
-                                                    <path d="M55 45 l-3-25 15 12 13-20 13 20 15-12-3 25 z" fill="#FCD34D" stroke="#B45309" stroke-width="3" stroke-linejoin="round"/>
-                                                    <rect x="52" y="42" width="96" height="10" rx="3" fill="#A78BFA" stroke="#1E1B4B" stroke-width="2.5"/>
-                                                    <circle cx="52" cy="18" r="4" fill="#F472B6"/>
-                                                    <circle cx="148" cy="18" r="4" fill="#F472B6"/>
-                                                    <circle cx="100" cy="12" r="4" fill="#22D3EE"/>
-                                                <?php endif; ?>
+                                        <!-- LAYER TOPI -->
+                                        <?php if ($topiAktif === 'topi-astronaut'): ?>
+                                            <g>
+                                                <path d="M55 42 a45 30 0 0 1 90 0 z" fill="#C4B5FD" stroke="#1E1B4B" stroke-width="3" stroke-linejoin="round"/>
+                                                <path d="M68 40 a32 20 0 0 1 64 0 z" fill="#7DD3FC" stroke="#1E1B4B" stroke-width="2" stroke-linejoin="round"/>
+                                                <rect x="48" y="40" width="104" height="12" rx="6" fill="#F9A8D4" stroke="#1E1B4B" stroke-width="3"/>
+                                            </g>
+                                        <?php elseif ($topiAktif === 'mahkota-galaksi'): ?>
+                                            <g>
+                                                <path d="M55 45 l-3-25 15 12 13-20 13 20 15-12-3 25 z" fill="#FCD34D" stroke="#B45309" stroke-width="3" stroke-linejoin="round"/>
+                                                <rect x="52" y="42" width="96" height="10" rx="3" fill="#A78BFA" stroke="#1E1B4B" stroke-width="2.5"/>
+                                                <circle cx="52" cy="18" r="4" fill="#F472B6"/>
+                                                <circle cx="148" cy="18" r="4" fill="#F472B6"/>
+                                                <circle cx="100" cy="12" r="4" fill="#22D3EE"/>
                                             </g>
                                         <?php endif; ?>
 
@@ -196,25 +253,25 @@ function getIkonItem($items, $id) {
                                 👑 Kapten Galaksi
                             </p>
                             <h1 class="mt-2 text-3xl sm:text-4xl font-black leading-tight">
-                                <?= e($user_name) ?>
+                                <?= e($user['nama']) ?>
                             </h1>
                             <p class="mt-1 text-sm sm:text-base font-bold opacity-90">
-                                Penjelajah Galaksi Level <?= $user_level ?>
+                                Penjelajah Galaksi Level 1
                             </p>
 
                             <div class="mt-4 flex flex-wrap justify-center sm:justify-start gap-3">
                                 <div class="inline-flex items-center gap-2 bg-amber-400 border-2 border-amber-300 rounded-2xl px-3 py-1.5 shadow">
                                     <span class="text-xl">⭐</span>
                                     <div>
-                                        <p class="text-[10px] font-extrabold uppercase text-amber-900 leading-none">Bintang</p>
-                                        <p class="text-lg font-black text-amber-900 leading-none"><?= $star_coins ?></p>
+                                        <p class="text-[10px] font-extrabold uppercase text-amber-900 leading-none">Koin</p>
+                                        <p class="text-lg font-black text-amber-900 leading-none"><?= $koinSekarang ?></p>
                                     </div>
                                 </div>
                                 <div class="inline-flex items-center gap-2 bg-white/20 border-2 border-white/30 rounded-2xl px-3 py-1.5 shadow">
                                     <span class="text-xl">🎒</span>
                                     <div>
                                         <p class="text-[10px] font-extrabold uppercase text-white/80 leading-none">Item</p>
-                                        <p class="text-lg font-black leading-none"><?= $totalItem ?></p>
+                                        <p class="text-lg font-black leading-none"><?= count($koleksi) ?></p>
                                     </div>
                                 </div>
                             </div>
@@ -243,7 +300,7 @@ function getIkonItem($items, $id) {
                         <p class="text-xs font-black leading-tight">Master Matematika</p>
                         <p class="text-[10px] font-bold opacity-70 mt-0.5">100% di Matematika</p>
                     </div>
-                    <div class="flex flex-col items-center text-center p-3 rounded-2xl border-2 <?= $totalItem >= 3 ? 'bg-gradient-to-br from-emerald-100 to-emerald-200 border-emerald-300' : 'bg-slate-100 border-slate-200 opacity-50' ?>">
+                    <div class="flex flex-col items-center text-center p-3 rounded-2xl border-2 <?= count($koleksi) >= 3 ? 'bg-gradient-to-br from-emerald-100 to-emerald-200 border-emerald-300' : 'bg-slate-100 border-slate-200 opacity-50' ?>">
                         <span class="text-4xl mb-1">🏆</span>
                         <p class="text-xs font-black leading-tight">Kolektor Sejati</p>
                         <p class="text-[10px] font-bold opacity-70 mt-0.5">Beli 3 item</p>
@@ -260,43 +317,54 @@ function getIkonItem($items, $id) {
                     </a>
                 </div>
 
-                <?php if (empty($koleksiSaya)): ?>
+                <?php if (empty($koleksi)): ?>
                     <div class="bg-white rounded-2xl p-8 text-center border-2 border-dashed border-violet-200">
                         <p class="text-4xl mb-2">🎒</p>
                         <p class="text-sm font-extrabold text-slate-600">Koleksimu masih kosong</p>
                         <p class="text-xs font-bold text-slate-400 mt-1">Beli item di Toko Bintang untuk mengisi koleksimu!</p>
-                        <a href="shop.php" class="inline-block mt-4 bg-violet-500 hover:bg-violet-600 text-white font-extrabold text-sm px-6 py-2.5 rounded-full shadow transition-transform hover:scale-105">
+                        <a href="shop.php" class="inline-block mt-4 bg-violet-500 hover:bg-violet-600 text-white font-extrabold text-sm px-6 py-2.5 rounded-full shadow">
                             Ke Toko Bintang 🛍️
                         </a>
                     </div>
                 <?php else: ?>
-                    <div id="koleksi-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                        <?php foreach ($koleksiSaya as $item):
-                            $sedangDipakai = ($topiAktif === $item['id']) || ($kacamataAktif === $item['id']);
-                            $bisaDipakai   = (($item['slot'] ?? '') === 'topi') || (($item['slot'] ?? '') === 'kacamata');
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                        <?php foreach ($koleksi as $item):
+                            $itemId  = $item['id'] ?? '';
+                            $itemNama = $item['nama'] ?? 'Item';
+                            $slot    = $item['slot'] ?? null;
+                            $dipakai = sedangDipakai($itemId, $topiAktif, $kacamataAktif);
+                            $bisaDipakai = ($slot === 'topi' || $slot === 'kacamata');
+
+                            // Cari ikon dari config
+                            $ikonHtml = '🎁';
+                            foreach ($items as $it) {
+                                if ($it['id'] === $itemId) { $ikonHtml = $it['ikon']; break; }
+                            }
                         ?>
-                            <article class="item-koleksi flex flex-col bg-white border-2 <?= $sedangDipakai ? 'border-emerald-400 bg-emerald-50' : 'border-violet-200' ?> rounded-2xl p-3 shadow-sm transition-all"
-                                     data-item-id="<?= e($item['id']) ?>"
-                                     data-item-slot="<?= e($item['slot'] ?? '') ?>">
+                            <article class="flex flex-col bg-white border-2 <?= $dipakai ? 'border-emerald-400 bg-emerald-50' : 'border-violet-200' ?> rounded-2xl p-3 shadow-sm">
 
-                                <div class="w-16 h-16 mx-auto mb-2 flex items-center justify-center"><?= $item['ikon'] ?></div>
-                                <h3 class="text-xs font-black leading-tight text-center flex-1"><?= e($item['nama']) ?></h3>
+                                <div class="w-16 h-16 mx-auto mb-2 flex items-center justify-center"><?= $ikonHtml ?></div>
+                                <h3 class="text-xs font-black leading-tight text-center flex-1"><?= e($itemNama) ?></h3>
 
-                                <?php if ($sedangDipakai): ?>
-                                    <!-- DIPAKAI: tombol LEPAS -->
-                                    <button type="button"
-                                            class="btn-lepas-profile w-full mt-2 bg-rose-500 hover:bg-rose-600 text-white font-extrabold text-xs py-1.5 rounded-full transition-transform hover:scale-105"
-                                            data-item-id="<?= e($item['id']) ?>"
-                                            data-item-slot="<?= e($item['slot'] ?? '') ?>">
-                                        Lepas 🚫
-                                    </button>
+                                <?php if ($dipakai): ?>
+                                    <form method="POST" class="mt-2">
+                                        <input type="hidden" name="aksi" value="lepas">
+                                        <input type="hidden" name="item_id" value="<?= e($itemId) ?>">
+                                        <input type="hidden" name="slot" value="<?= e($slot) ?>">
+                                        <button type="submit"
+                                                class="w-full bg-rose-500 hover:bg-rose-600 text-white font-extrabold text-xs py-1.5 rounded-full transition-transform hover:scale-105">
+                                            Lepas 🚫
+                                        </button>
+                                    </form>
                                 <?php elseif ($bisaDipakai): ?>
-                                    <!-- BISA DIPAKAI: tombol GUNAKAN -->
-                                    <button type="button"
-                                            class="btn-pakai-profile w-full mt-2 bg-violet-500 hover:bg-violet-600 text-white font-extrabold text-xs py-1.5 rounded-full transition-transform hover:scale-105"
-                                            data-item-id="<?= e($item['id']) ?>">
-                                        Gunakan 👕
-                                    </button>
+                                    <form method="POST" class="mt-2">
+                                        <input type="hidden" name="aksi" value="pakai">
+                                        <input type="hidden" name="item_id" value="<?= e($itemId) ?>">
+                                        <button type="submit"
+                                                class="w-full bg-violet-500 hover:bg-violet-600 text-white font-extrabold text-xs py-1.5 rounded-full transition-transform hover:scale-105">
+                                            Gunakan 👕
+                                        </button>
+                                    </form>
                                 <?php else: ?>
                                     <span class="mt-2 w-full text-center text-xs font-bold bg-slate-100 text-slate-500 py-1.5 rounded-full">
                                         Koleksi
@@ -316,106 +384,5 @@ function getIkonItem($items, $id) {
             </div>
         </footer>
     </div>
-
-    <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] hidden bg-cosmic-text text-white font-bold text-sm px-4 py-2 rounded-full shadow-lg text-center max-w-[90%]" style="display:none;"></div>
-
-    <script>
-        window.BRIGHT_SPACE = {
-            user: {
-                id: <?= (int) $user_id ?>,
-                nama: <?= json_encode($user_name, JSON_UNESCAPED_UNICODE) ?>,
-                star_coins: <?= (int) $star_coins ?>
-            }
-        };
-    </script>
-    <script>
-    (function () {
-        'use strict';
-
-        var toastEl = document.getElementById('toast');
-
-        function showToast(pesan, durasi) {
-            if (!toastEl) return;
-            toastEl.textContent = pesan;
-            toastEl.classList.remove('hidden');
-            toastEl.style.display = '';
-            clearTimeout(toastEl._timer);
-            toastEl._timer = setTimeout(function () {
-                toastEl.classList.add('hidden');
-                toastEl.style.display = 'none';
-            }, durasi || 2400);
-        }
-
-        function reloadSetelah(pesan, delay) {
-            showToast(pesan, 1500);
-            setTimeout(function () { window.location.reload(); }, delay || 800);
-        }
-
-        // ============ TOMBOL GUNAKAN ============
-        document.querySelectorAll('.btn-pakai-profile').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var id = btn.getAttribute('data-item-id');
-                if (!id) return;
-
-                btn.disabled = true;
-                btn.textContent = 'Memakai...';
-
-                fetch('api/pakai_item.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ item_id: id })
-                })
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
-                    if (!data.ok) {
-                        showToast('❌ ' + (data.error || 'Gagal pakai'), 3000);
-                        btn.disabled = false;
-                        btn.textContent = 'Gunakan 👕';
-                        return;
-                    }
-                    reloadSetelah('👕 Berhasil dipakai!');
-                })
-                .catch(function () {
-                    showToast('❌ Gagal koneksi server', 3000);
-                    btn.disabled = false;
-                    btn.textContent = 'Gunakan 👕';
-                });
-            });
-        });
-
-        // ============ TOMBOL LEPAS ============
-        document.querySelectorAll('.btn-lepas-profile').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var id = btn.getAttribute('data-item-id');
-                var slot = btn.getAttribute('data-item-slot');
-                if (!id) return;
-
-                btn.disabled = true;
-                btn.textContent = 'Melepas...';
-
-                fetch('api/lepas_item.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ item_id: id, slot: slot })
-                })
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
-                    if (!data.ok) {
-                        showToast('❌ ' + (data.error || 'Gagal lepas'), 3000);
-                        btn.disabled = false;
-                        btn.textContent = 'Lepas 🚫';
-                        return;
-                    }
-                    reloadSetelah('🚫 Berhasil dilepas!');
-                })
-                .catch(function () {
-                    showToast('❌ Gagal koneksi server', 3000);
-                    btn.disabled = false;
-                    btn.textContent = 'Lepas 🚫';
-                });
-            });
-        });
-    })();
-    </script>
 </body>
 </html>
