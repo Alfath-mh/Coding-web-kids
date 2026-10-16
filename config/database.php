@@ -1,70 +1,176 @@
 <?php
-// ============================================================
-// config/database.php — Mode TANPA DATABASE (Session & Dummy)
-// ============================================================
 defined('BRIGHT_SPACE') or exit('Akses langsung tidak diizinkan.');
 
 // ============================================================
-// KONEKSI DB — Selalu return null (tidak dipakai)
+// KONFIGURASI DATABASE (MODE FALLBACK)
+// Kalau DB gak ada, app tetap jalan pakai session
+// ============================================================
+
+if (getenv('DB_HOST')) {
+    define('DB_HOST', getenv('DB_HOST'));
+    define('DB_NAME', getenv('DB_NAME') ?: 'bright_space');
+    define('DB_USER', getenv('DB_USER') ?: 'bright_user');
+    define('DB_PASS', getenv('DB_PASS') ?: '');
+} else {
+    define('DB_HOST', '127.0.0.1');
+    define('DB_NAME', 'bright_space');
+    define('DB_USER', 'root');
+    define('DB_PASS', '');
+}
+
+define('DB_CHARSET', 'utf8mb4');
+
+// ============================================================
+// KONEKSI DB — Return null kalau gagal (biar app tetap jalan)
 // ============================================================
 function db()
 {
-    return null;
+    static $pdo = null;
+    static $tried = false;
+
+    if ($tried) { return $pdo; }
+    $tried = true;
+
+    try {
+        $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=' . DB_CHARSET;
+        $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES   => false,
+        ]);
+    } catch (PDOException $e) {
+        // Gagal connect — return null, jangan crash
+        $pdo = null;
+    }
+    return $pdo;
 }
 
 // ============================================================
-// HELPER DB — Semua return kosong, tanpa query SQL
+// DB HELPERS — Safe fallback kalau PDO null
 // ============================================================
 function db_one($sql, $params = [])
 {
-    return null;
+    $pdo = db();
+    if (!$pdo) { return null; }
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetch() ?: null;
+    } catch (Exception $e) {
+        return null;
+    }
 }
 
 function db_all($sql, $params = [])
 {
-    return [];
+    $pdo = db();
+    if (!$pdo) { return []; }
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    } catch (Exception $e) {
+        return [];
+    }
 }
 
 function db_exec($sql, $params = [])
 {
-    return false;
+    $pdo = db();
+    if (!$pdo) { return false; }
+    try {
+        $stmt = $pdo->prepare($sql);
+        return $stmt->execute($params);
+    } catch (Exception $e) {
+        return false;
+    }
 }
 
 function db_insert($sql, $params = [])
 {
-    return 0;
+    db_exec($sql, $params);
+    $pdo = db();
+    return $pdo ? (int) $pdo->lastInsertId() : 0;
 }
 
 // ============================================================
-// USER — Ambil dari Session saja
+// USER — Ambil dari SESSION saja (fallback kalau DB kosong)
 // ============================================================
 function current_user()
 {
-    return [
-        'id'              => 1,
-        'nama'            => $_SESSION['nama'] ?? 'Penjelajah Antariksa',
-        'star_coins'      => $_SESSION['star_coins'] ?? 120,
-        'level'           => 1,
-        'avatar_topi'     => $_SESSION['avatar_topi'] ?? null,
-        'avatar_kacamata' => $_SESSION['avatar_kacamata'] ?? null,
-    ];
+    if (!isset($_SESSION['user_id'])) {
+        return null;
+    }
+
+    // Coba ambil dari DB dulu
+    $user = db_one('SELECT * FROM users WHERE id = ?', [$_SESSION['user_id']]);
+
+    // Kalau DB gak ada / user gak ketemu → pakai session
+    if (!$user) {
+        return [
+            'id'         => $_SESSION['user_id']    ?? 1,
+            'nama'       => $_SESSION['username']   ?? 'Kapten',
+            'star_coins' => $_SESSION['star_coins'] ?? 120,
+            'level'      => $_SESSION['level']      ?? 1,
+            'avatar_topi'     => $_SESSION['avatar_topi']     ?? null,
+            'avatar_kacamata' => $_SESSION['avatar_kacamata'] ?? null,
+        ];
+    }
+
+    return $user;
 }
 
 // ============================================================
-// LOGIN CHECK — Cek session saja
+// require_login — Cek session saja
 // ============================================================
 function require_login()
 {
-    if (empty($_SESSION['logged_in'])) {
+    if (!isset($_SESSION['user_id'])) {
         header('Location: login.php');
         exit;
     }
 }
 
 // ============================================================
-// GET SOAL — Data dummy statis
+// get_soal — Fallback ke array dummy kalau DB kosong
 // ============================================================
 function get_soal($planetId, $modeType, $limit = 15)
+{
+    $rows = db_all(
+        'SELECT * FROM soal_bank WHERE planet_id = ? AND mode_type = ? ORDER BY RAND() LIMIT ' . (int) $limit,
+        [$planetId, $modeType]
+    );
+
+    // Kalau DB kosong, pakai fallback dummy
+    if (empty($rows)) {
+        return get_soal_fallback($planetId, $modeType);
+    }
+
+    $hasil = [];
+    foreach ($rows as $r) {
+        $hasil[] = [
+            'pertanyaan'  => $r['pertanyaan'],
+            'pilihan'     => [
+                'A' => $r['pilihan_a'],
+                'B' => $r['pilihan_b'],
+                'C' => $r['pilihan_c'],
+            ],
+            'jawaban'     => $r['jawaban'],
+            'penjelasan'  => $r['penjelasan'],
+            'umpan_salah' => [
+                'A' => $r['umpan_salah_a'],
+                'B' => $r['umpan_salah_b'],
+                'C' => $r['umpan_salah_c'],
+            ],
+        ];
+    }
+    return $hasil;
+}
+
+// ============================================================
+// FALLBACK SOAL — dipakai kalau DB kosong
+// ============================================================
+function get_soal_fallback($planetId, $modeType)
 {
     $bank = [
         'matematika' => [
@@ -225,6 +331,5 @@ function get_soal($planetId, $modeType, $limit = 15)
         ],
     ];
 
-    $soal = $bank[$planetId] ?? [];
-    return array_slice($soal, 0, $limit);
+    return $bank[$planetId] ?? [];
 }

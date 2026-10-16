@@ -1,13 +1,12 @@
 <?php
-// ============================================================
-// logout.php — Hapus session dan kembali ke login
-// ============================================================
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Hapus semua session
 $_SESSION = [];
 
+// Hapus cookie session
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(
@@ -21,7 +20,9 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
+// Hancurkan session
 session_destroy();
 
+// Redirect ke login
 header('Location: login.php');
 exit;

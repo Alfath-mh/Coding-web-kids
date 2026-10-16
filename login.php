@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// login.php — Login tanpa database
+// login.php - Login tanpa database (bypass mode)
 // ============================================================
 define('BRIGHT_SPACE', true);
 
@@ -8,28 +8,42 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Kalau sudah login, langsung ke index
-if (!empty($_SESSION['logged_in'])) {
-    header('Location: index.php');
+// Kalau sudah login, langsung ke dashboard
+if (isset($_SESSION['user_id'])) {
+    header('Location: dashboard.php');
     exit;
 }
 
 $error = '';
 
+// Proses login
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nama = trim($_POST['nama'] ?? '');
-    $nama = preg_replace('/[^A-Za-z0-9_ ]/', '', $nama);
-    $nama = trim(substr($nama, 0, 40));
+    $username = trim($_POST['username'] ?? '');
+    $password = trim($_POST['password'] ?? '');
 
-    if ($nama === '') {
-        $error = 'Isi namamu dulu ya, Kapten! 🚀';
+    if ($username === '' || $password === '') {
+        $error = 'Isi username dan password dulu ya, Kapten! 🚀';
     } else {
-        $_SESSION['logged_in']  = true;
-        $_SESSION['nama']       = $nama;
+        // ============================================================
+        // BYPASS MODE: Terima username & password apa saja
+        // Set session langsung tanpa cek database
+        // ============================================================
+
+        // Sanitasi username (buang karakter aneh)
+        $username = preg_replace('/[^A-Za-z0-9_ ]/', '', $username);
+        $username = trim(substr($username, 0, 40));
+        if ($username === '') { $username = 'Kapten'; }
+
+        // Set session
+        $_SESSION['user_id']    = 1;
+        $_SESSION['username']   = $username;
+        $_SESSION['nama']       = $username;
         $_SESSION['star_coins'] = 120;
+        $_SESSION['level']      = 1;
         $_SESSION['login_time'] = time();
 
-        header('Location: index.php');
+        // Redirect ke dashboard
+        header('Location: dashboard.php');
         exit;
     }
 }
@@ -43,16 +57,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        cosmic: { bg: '#E0F2FE', card: '#EDE9FE', accent: '#FEF3C7', text: '#1E1B4B' }
-                    },
-                    fontFamily: { nunito: ['Nunito', 'ui-rounded', 'system-ui', 'sans-serif'] }
-                }
-            }
-        };
+        tailwind.config = { theme: { extend: {
+            colors: { cosmic: { bg: '#E0F2FE', card: '#EDE9FE', accent: '#FEF3C7', text: '#1E1B4B' } },
+            fontFamily: { nunito: ['Nunito', 'ui-rounded', 'system-ui', 'sans-serif'] }
+        } } };
     </script>
 </head>
 <body class="font-nunito bg-cosmic-bg text-cosmic-text min-h-screen flex items-center justify-center p-4 antialiased">
@@ -60,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="w-full max-w-md">
         <div class="bg-white border-4 border-cosmic-accent rounded-3xl shadow-2xl p-8 text-center">
 
+            <!-- Logo roket -->
             <div class="w-20 h-20 mx-auto mb-3 flex items-center justify-center bg-cosmic-accent rounded-full border-4 border-amber-300">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-12 h-12" aria-hidden="true">
                     <path d="M9.5 17.5c-.5 1.6-.3 3.2.5 4.5 1-.6 1.6-1.2 2-2 .4.8 1 1.4 2 2 .8-1.3 1-2.9.5-4.5z" fill="#FB923C"/>
@@ -74,24 +83,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="mt-1 text-sm font-bold opacity-70">Petualangan Belajar di Luar Angkasa 🚀</p>
 
             <form method="POST" class="mt-6 text-left">
-                <label for="nama" class="block text-sm font-extrabold mb-2">Siapa namamu, Kapten?</label>
-                <input type="text" name="nama" id="nama" maxlength="40" autofocus
-                       value="<?= htmlspecialchars($_POST['nama'] ?? '') ?>"
-                       placeholder="Contoh: Budi"
+
+                <label for="username" class="block text-sm font-extrabold mb-2">Username Kapten</label>
+                <input type="text" name="username" id="username" maxlength="40" autofocus
+                       value="<?= htmlspecialchars($_POST['username'] ?? '') ?>"
+                       placeholder="Contoh: Kapten Budi"
+                       class="w-full px-4 py-3 border-2 border-violet-300 rounded-2xl font-bold text-lg text-center bg-violet-50 focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-200 mb-3">
+
+                <label for="password" class="block text-sm font-extrabold mb-2">Password</label>
+                <input type="password" name="password" id="password" maxlength="40"
+                       placeholder="Bebas, apa saja boleh"
                        class="w-full px-4 py-3 border-2 border-violet-300 rounded-2xl font-bold text-lg text-center bg-violet-50 focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-200">
 
                 <?php if ($error): ?>
-                    <p class="mt-2 text-sm font-bold text-rose-600 text-center"><?= htmlspecialchars($error) ?></p>
+                    <p class="mt-3 text-sm font-bold text-rose-600 text-center"><?= htmlspecialchars($error) ?></p>
                 <?php endif; ?>
 
                 <button type="submit"
-                        class="w-full mt-4 bg-violet-500 hover:bg-violet-600 text-white font-extrabold text-lg py-3 rounded-full shadow-lg transition-transform duration-200 hover:scale-105 active:scale-95">
+                        class="w-full mt-4 bg-violet-500 hover:bg-violet-600 text-white font-extrabold text-lg py-3 rounded-full shadow-lg transition-transform duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300">
                     Mulai Petualangan 🚀
                 </button>
             </form>
 
             <p class="mt-4 text-xs font-bold opacity-60">
-                Nama kamu akan disimpan untuk melanjutkan petualangan.
+                Isi username & password apa saja untuk masuk.
             </p>
         </div>
     </div>
