@@ -1,0 +1,10 @@
+# Abaikan file environment lokal yang berisi rahasia
+.env
+
+# Abaikan folder vendor/node_modules jika ada
+vendor/
+node_modules/
+
+# Abaikan file cache/temp OS
+.DS_Store
+Thumbs.db
